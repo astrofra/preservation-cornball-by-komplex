@@ -65,6 +65,37 @@ The main preservation risk is not decompilation itself. The main risks are:
 
 This last point is an inference from the binary, not a direct proof.
 
+### Estimated original implementation language
+
+My current estimate is:
+
+- C: about 70%
+- C++: about 30%
+
+Important clarification:
+
+- almost all of that 30% C++ probability is "procedural or C-style C++"
+- the probability of class-heavy, idiomatic late-1990s MSVC C++ is low, roughly under 10%
+
+Evidence pushing the estimate toward C:
+
+- no MSVC RTTI markers were found
+- no obvious C++ mangled names were found
+- no obvious vtable blocks were found in `.rdata`
+- no clear `thiscall` / object-method calling pattern stood out in the quick pass
+- the visible program structure is very procedural: global state, asset tables, Win32 setup, OpenGL immediate-mode rendering, and small wrapper functions
+
+Evidence preventing a stronger C-only claim:
+
+- the binary was almost certainly linked with Microsoft tooling and static CRT components from the period
+- the executable contains the standard `pure virtual function call` runtime string, even though no direct cross-reference to that string was found in the program logic
+- in this era it was common to build mostly procedural demo code as `.cpp` while using very little actual C++ language machinery
+
+So the best practical reading is:
+
+- most likely written in C, or
+- written in very light C++ that would reconstruct naturally back into C anyway
+
 ### Windowing and rendering
 
 The executable imports from:
@@ -215,6 +246,8 @@ Even without original names, the program shape is recoverable because the execut
 - main loop and scene/effect functions
 
 This is enough to rebuild the program from behavior, not just from pseudocode.
+
+If the original code was C++, it was probably close enough to C in structure that reconstructing it as C would still be a defensible preservation choice.
 
 ## Recommended Reconstruction Strategy
 
