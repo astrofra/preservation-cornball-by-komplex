@@ -1,0 +1,11 @@
+MIDAS Sound System v0.40 Revision a
+A multi-channel digital sound and music
+system for C, Pascal and Assembler
+programmers. Supports GUS, PAS, SB, WSS
+and no sound, plays MOD, S3M and MTM
+modules. Can be used with Borland and
+Watcom C (16-bit), Borland Pascal 7 and
+now also with pure assembler.
+FULL SOURCE CODE INCLUDED! Now also all
+libraries included in compiled form.
+(Extract with subdirectories)

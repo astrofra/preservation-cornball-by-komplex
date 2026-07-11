@@ -1,0 +1,60 @@
+#*      ASM_EXP.MAK
+#*
+#* Make script for pure assembler examples
+#*
+#* Copyright 1995 Petteri Kangaslampi and Jarno Paananen
+#*
+#* This file is part of the MIDAS Sound System, and may only be
+#* used, modified and distributed under the terms of the MIDAS
+#* Sound System license, LICENSE.TXT. By continuing to use,
+#* modify or distribute this file you indicate that you have
+#* read the license and understand and accept it fully.
+#*
+
+# MIDAS Sound System directory:
+
+MIDASDIR = c:\midas
+
+
+# Compilers and options:
+
+ASM = tasm
+ASMOPTS = -UT310 -ml -m9 -d__ASM16__ -i$(MIDASDIR)\src
+LINK = tlink
+LINKOPTS = -c
+
+
+all : mplaymod.exe intro.exe
+
+asmopts :
+        echo $(ASMOPTS) > asmopts
+
+
+# Minimum Protracker module player:
+
+mplaymod.exe : mplaymod.obj $(MIDASDIR)\mstartup.obj $(MIDASDIR)\midasasm.lib
+        $(LINK) $(LINKOPTS) $(MIDASDIR)\mstartup.obj mplaymod.obj, mplaymod, \
+        mplaymod.map, $(MIDASDIR)\midasasm.lib
+
+mplaymod.obj : mplaymod.asm
+        $(ASM) $(ASMOPTS) mplaymod.asm
+
+
+# Intro:
+
+intro.exe : intro.obj music.obj $(MIDASDIR)\mstartup.obj \
+        $(MIDASDIR)\mcutasm.lib
+        $(LINK) $(LINKOPTS) $(MIDASDIR)\mstartup.obj intro.obj music.obj, \
+        intro, intro.map, $(MIDASDIR)\mcutasm.lib
+
+intro.obj : intro.asm
+        $(ASM) $(ASMOPTS) intro.asm
+
+music.obj : music.asm module.asm
+        $(ASM) $(ASMOPTS) music.asm
+
+module.asm : intro.mm
+	bin2asm intro.mm module.asm 1
+
+intro.mm : $(MIDASDIR)\live.mod
+        mod2mm $(MIDASDIR)\live.mod intro.mm

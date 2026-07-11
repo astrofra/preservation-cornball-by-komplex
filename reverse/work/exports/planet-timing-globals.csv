@@ -1,0 +1,13 @@
+address,size,proposed_name,producer,consumers,confidence,notes
+0x005d1710,qword,g_demo_elapsed_seconds,dispatch_scene_by_music_position,none found,high,Computed as (current_tick_ms - g_demo_start_tick_ms) * 0.001. No downstream absolute reads found yet.
+0x005d1718,dword,g_cached_music_position,dispatch_scene_by_music_position,none found,medium,Per-frame copy of MIDASplayStatus.position used alongside the threshold-based scene dispatch logic.
+0x005d1728,qword,g_scene_elapsed_seconds,dispatch_scene_by_music_position,scene families,high,Computed as (current_tick_ms - g_scene_start_tick_ms) * 0.001 and reused across the renderer.
+0x005d1730,dword,g_demo_start_tick_ms,run_main_loop,dispatch_scene_by_music_position,high,Initial GetTickCount() snapshot written once when the main loop starts.
+0x005d1734,dword,g_scene_start_tick_ms,run_main_loop;dispatch_scene_by_music_position,dispatch_scene_by_music_position,high,Initialized at loop start and reset only when the resolved scene index changes.
+0x005d1738,dword,g_cached_music_row,dispatch_scene_by_music_position,none found,medium,Per-frame copy of MIDASplayStatus.row taken from offset +8 of the status structure.
+0x005d1750,dword,g_midas_play_status_position,midas06.dll!MIDASgetPlayStatus,dispatch_scene_by_music_position,high,Compared against the scene threshold table. Signature and field layout match Housemarque Audio System 0.7 beta 1.
+0x005d1754,dword,g_midas_play_status_pattern,midas06.dll!MIDASgetPlayStatus,none found,medium,Second field in the 0.7 MIDASplayStatus structure. No binary reads found yet.
+0x005d1758,dword,g_midas_play_status_row,midas06.dll!MIDASgetPlayStatus,dispatch_scene_by_music_position,high,Copied into g_cached_music_row each frame. Offset matches MIDASplayStatus.row.
+0x005d175c,dword,g_midas_play_status_sync_info,midas06.dll!MIDASgetPlayStatus,none found,medium,Fourth field in the 0.7 MIDASplayStatus structure. No binary reads found yet.
+0x005d1760,dword,g_current_scene_index,dispatch_scene_by_music_position,dispatch_scene_by_music_position,high,Scene-family index selected from MIDAS position thresholds and used for the jump-table dispatch.
+0x005d1764,dword,g_previous_scene_index,dispatch_scene_by_music_position,none found,high,Snapshot of the prior scene index taken immediately before any scene-change update.

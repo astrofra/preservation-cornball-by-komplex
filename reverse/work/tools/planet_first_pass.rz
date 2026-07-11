@@ -99,4 +99,28 @@ f+ g_main_hdc 4
 s 0x005d1748
 f+ g_wgl_context 4
 s 0x005d1750
-f+ g_music_play_status 4
+f+ g_midas_play_status 16
+s 0x005d1710
+f+ g_demo_elapsed_seconds 8
+s 0x005d1718
+f+ g_cached_music_position 4
+s 0x005d1728
+f+ g_scene_elapsed_seconds 8
+s 0x005d1730
+f+ g_demo_start_tick_ms 4
+s 0x005d1734
+f+ g_scene_start_tick_ms 4
+s 0x005d1738
+f+ g_cached_music_row 4
+s 0x005d1750
+f+ g_midas_play_status_position 4
+s 0x005d1754
+f+ g_midas_play_status_pattern 4
+s 0x005d1758
+f+ g_midas_play_status_row 4
+s 0x005d175c
+f+ g_midas_play_status_sync_info 4
+s 0x005d1760
+f+ g_current_scene_index 4
+s 0x005d1764
+f+ g_previous_scene_index 4

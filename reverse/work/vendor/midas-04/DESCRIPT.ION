@@ -1,0 +1,23 @@
+asm_exp Turbo Assembler examples
+c_exp Borland and Watcom C examples
+pas_exp Borland Pascal 7 examples
+src MIDAS Sound System source code
+midas.doc DOCUMENTATION FOR MIDAS SOUND SYSTEM!
+midp.doc Documentation for MIDAS Module Player
+bpcutrm BP7 Real Mode cut-down units and objects
+bpcutpm BP7 Prot Mode cut-down units and objects
+bpfullpm BP7 Prot. Mode full units and objects
+bpfullrm BP7 Real Mode full units and objects
+descript.ion 4DOS File and directory descriptions
+utils Utilities needed to compile the examples
+license.txt MIDAS Sound System license. READ THIS!
+license!.doc Notes on the license
+live.mod Music for Live, used by some examples
+live Source code for Live, S2 64k intro
+mcutbc.lib Cut-down MIDAS library for Borland C
+mcutwc.lib Cut-down MIDAS library for Watcom C
+midasbc.lib Full MIDAS library for Borland C
+midaswc.lib Full MIDAS library for Watcom C
+mcutasm.lib Cut-down MIDAS library for Assembler
+midasasm.lib Full MIDAS library for assembler
+readme.1st !! READ ME FIRST !!

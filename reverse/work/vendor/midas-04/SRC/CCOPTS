@@ -1,0 +1,1 @@
+-c -3 -G- -ml -O1 -Ic:\bc\include -DDEBUG -D__BC16__

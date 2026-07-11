@@ -34,6 +34,8 @@ Set up a repeatable static-analysis workspace, install at least one open-source 
    - [reverse/work/projects/cutter/planet-pass-01.rzdb](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/projects/cutter/planet-pass-01.rzdb)
 12. Ran the third static pass on the scene renderer families and shared helper routines:
    - [reverse/work/notes/cutter-pass-03.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-03.md)
+13. Ran the fourth static pass on timing globals and MIDAS status layout:
+   - [reverse/work/notes/cutter-pass-04.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-04.md)
 
 ## Cutter Installation
 
@@ -65,6 +67,7 @@ Created under `reverse/work/exports/`:
 - [planet-scene-dispatch.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-dispatch.csv)
 - [planet-scene-family-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-family-map.csv)
 - [planet-scene-helper-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-helper-map.csv)
+- [planet-timing-globals.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-timing-globals.csv)
 - [planet-wndproc-messages.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-wndproc-messages.csv)
 
 ## Cutter Pass 01 Findings
@@ -229,22 +232,87 @@ Pass 03 also provided several stable helpers and state blocks for later source r
 - ring-strip vertex caches around `0x005d7950` and `0x005d7c50`
 - overlay jitter state around `0x005d7948`, `0x005d7f50`, and `0x005d7f54`
 
+## Cutter Pass 04 Findings
+
+Pass 04 resolved the timing globals around `0x005d1710` through `0x005d1764` and verified the older MIDAS status layout used by the demo.
+
+### Verified MIDAS status structure
+
+`PLANET.EXE` imports `_MIDASgetPlayStatus@4` from `midas06.dll`.
+
+A local mirror of Housemarque Audio System `0.7 beta 1` under `reverse/work/vendor/` matches that exact single-argument signature and documents:
+
+- `MIDASplayStatus.position`
+- `MIDASplayStatus.pattern`
+- `MIDASplayStatus.row`
+- `MIDASplayStatus.syncInfo`
+
+This lines up cleanly with the binary accesses:
+
+- `0x005d1750` -> `g_midas_play_status_position`
+- `0x005d1754` -> `g_midas_play_status_pattern`
+- `0x005d1758` -> `g_midas_play_status_row`
+- `0x005d175c` -> `g_midas_play_status_sync_info`
+
+### Timing model
+
+The main loop and dispatcher now resolve to a hybrid timing model:
+
+- `MIDASplayStatus.position` selects the active scene family through the threshold table at `0x0040e068`
+- `GetTickCount()` snapshots drive frame timing and scene-local elapsed time
+- the scale constant at `0x0040d078` is exactly `0.001`
+
+Resolved globals:
+
+- `0x005d1730` -> `g_demo_start_tick_ms`
+- `0x005d1734` -> `g_scene_start_tick_ms`
+- `0x005d1728` -> `g_scene_elapsed_seconds`
+- `0x005d1760` -> `g_current_scene_index`
+- `0x005d1764` -> `g_previous_scene_index`
+- `0x005d1718` -> `g_cached_music_position`
+- `0x005d1738` -> `g_cached_music_row`
+- `0x005d1710` -> `g_demo_elapsed_seconds`
+
+The most important derived value is:
+
+- `g_scene_elapsed_seconds = (current_tick_ms - g_scene_start_tick_ms) * 0.001`
+
+That is the scene-facing timer reused across the renderer. The sibling global `g_demo_elapsed_seconds` is the same conversion measured from main-loop entry instead of scene entry. By contrast, `g_cached_music_position` and `g_cached_music_row` currently look like dispatcher-local caches rather than active scene inputs.
+
+### Reconstruction impact
+
+This reduces a key uncertainty for later source recovery:
+
+- scene changes are music-position driven
+- most intra-scene animation is wall-clock driven
+
+In practice, that means a future C or C++ rewrite can model the stable interface as:
+
+- `music_position`
+- `scene_index`
+- `scene_time_seconds`
+
+without first rebuilding a tracker-row-exact runtime.
+
+The detailed address map for this pass is exported in [planet-timing-globals.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-timing-globals.csv).
+
 ## Current Deliverable Quality
 
-The workspace is now ready for continued interactive analysis with a documented three-pass Cutter workflow.
+The workspace is now ready for continued interactive analysis with a documented four-pass Cutter workflow.
 
 The current map is still not final, but it is already useful enough to:
 
 - avoid restarting from raw addresses
 - separate scene-family logic from reusable helper routines
-- focus the next pass on timing globals and scene-local state
+- separate music-position scene switching from wall-clock scene timing
+- focus the next pass on geometry helpers and scene-local state
 - keep naming decisions consistent across tools
 
 ## Next Step
 
 Continue the static pass interactively in Cutter:
 
-1. document the timing globals around `0x005d1710` through `0x005d1738`
-2. resolve the exact geometry emitted by `draw_dual_texture_panel_pair` and `draw_cached_ring_strip`
+1. resolve the exact geometry emitted by `draw_dual_texture_panel_pair` and `draw_cached_ring_strip`
+2. determine whether `pattern`, `row`, or `syncInfo` are consumed indirectly through scene-local state blocks
 3. continue naming scene-local state blocks in the `0x005d79xx` and `0x005d7fxx` ranges
 4. begin drafting C-like pseudocode for the most stable scene helpers before tackling full-family reconstruction

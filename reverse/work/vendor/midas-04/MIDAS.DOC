@@ -1,0 +1,780 @@
+
+
+                                                                              
+
+
+                     MIDAS Sound System v0.40 revision A
+                     -----------------------------------
+
+            Copyright 1995 Petteri Kangaslampi and Jarno Paananen
+
+
+
+        MIDAS SOUND SYSTEM IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+        EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES
+        OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT
+        WILL ANY OF THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DAMAGES
+        CAUSED BY THE USE OR INABILITY TO USE, OF MIDAS SOUND SYSTEM.
+
+        MIDAS Sound System may only be used, distributed and modified under
+        the terms of the MIDAS Sound System license, LICENSE.TXT. By
+        continuing to use, modify or distribute MIDAS Sound System you
+        indicate that you have read the license and understand and accept it
+        fully. If you do not have the license or have problems understanding
+        it or fulfilling its requirements you must contact us.
+
+        MIDAS Sound System may freely be distributed as long as no money is
+        charged for it, and no attempt is made to restrict further copying,
+        distribution and using of MIDAS Sound System. It may not be used in
+        any commercial applications, including shareware, and may not be
+        included as part of a commercial publication or software package.
+        Separate commercial licensing is available.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System                   Getting Started                    Page 2
+
+
+1. Getting Started
+
+----------------------------------------------------------------------------
+1.1. Foreword
+----------------------------------------------------------------------------
+
+        This is the third public version of MIDAS Sound System, and, as the
+        version number suggests, not fully finished. Most importantly, there
+        is very little documentation, apart from this file, which you should
+        read through before proceeding. Numerous examples have been added from
+        the previous version and the code has been made much cleaner.  Still
+        this release is, like the two previous ones, intended for experienced
+        programmers only.  The best source for learning to use MIDAS Sound
+        System is the source code, so take a good look at the example
+        programs, experiment with them and modify them.  Also the MIDAS Sound
+        System source code should be clean and readable and includes a lot of
+        information on how to use the various features of MIDAS Sound System
+        and how it works.
+
+----------------------------------------------------------------------------
+1.2. Requirements
+----------------------------------------------------------------------------
+
+        MIDAS Sound System requires an Intel 80386 compatible processor, MS-
+        DOS 5.0 or above (untested below 5.0, might work). EMS memory is used
+        if found, and this decreases conventional memory requirements
+        dramatically, although at the expense of speed. To fully recompile
+        MIDAS Sound System you need Borland Turbo Assembler 4.0, Borland C 3.1
+        or Watcom C 10.0, and Borland Pascal 7 if you work in Pascal. Other C
+        compilers can be used fairly easily as well, at least other versions
+        of Borland and Watcom compilers. MIDAS Sound System v0.40 can be used
+        with any of those compilers alone, with a suitable linker, and
+        normally there should be no need to recompile the library.
+
+----------------------------------------------------------------------------
+1.3. Compiling the examples
+----------------------------------------------------------------------------
+
+1.3.1. Borland C
+
+        The Borland C examples are in the C_EXP\ subdirectory. To compile them
+        you need the Borland C command-line compiler, bcc, Borland make and
+        Borland large model runtime libraries. You also need to edit the make
+        script bc_exp.mak to reflect your system settings, mainly the MIDAS
+        Sound System directory in the beginning of the file. After this run
+        "make -fbc_exp.mak" to compile the examples.
+
+1.3.2. Watcom C
+
+        The Watcom C examples are in the C_EXP\ subdirectory, and are the same
+        as the Borland C examples except for the make script. To compile them
+        you need the Watcom 16-bit C compile and link utility, wcl, Watcom
+        make and Watcom large model runtime libraries. You also need to edit
+        the make script wc_exp.mak to reflect your system settings, mainly the
+        MIDAS Sound System directory in the beginning of the file. After this
+        run "wmake -u -f bc_exp.mak" to compile the examples.
+
+
+                                                                              
+
+
+
+MIDAS Sound System                   Getting Started                    Page 3
+
+
+        Included in this version of MIDAS Sound System is also the full source
+        code for our The Party '94 intro competition entry, Live, in the
+        subdirectory LIVE\.  It is not meant to be an example of good demo
+        coding, but rather an example on how to use MIDAS Sound System,
+        including music synchronization and screen synchronized timer. Live
+        can be compiled using Watcom C16 and Borland Turbo Assembler. Edit
+        "makefile" and "live.wlk" to correspond to your system, and compile
+        using "wmake -u".
+
+1.3.3. Borland Pascal
+
+        The Borland Pascal examples are in the PAS_EXP\ subdirectory. To
+        compile them you need Borland Pascal 7 command line compiler, bpc,
+        Borland make and the standard BP7 units. You need to copy the files
+        from the correct subdirectory to the main MIDAS directory before
+        compiling. You also need to edit the make scripts rm_exp.mak and
+        pm_exp.mak to reflect your system settings, mainly the MIDAS Sound
+        System directory. After this run "make -frm_exp.mak" to compile the
+        real mode or "make -fpm_exp.mak" the protected mode examples.
+
+1.3.4. Borland Turbo Assembler
+
+        The Assembler examples are in the ASM_EXP\ subdirectory. To compile
+        them you need Borland Turbo Assembler, probably version 4.0, Borland
+        make and Borland Turbo Link. You also need to edit the make script
+        makefile to reflect your system settings, mainly the MIDAS Sound
+        System directory. After this run "make" to compile the examples.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System               Using MIDAS Sound System               Page 4
+
+
+2. Using MIDAS Sound System
+
+----------------------------------------------------------------------------
+2.1. MIDAS Sound System Libraries
+----------------------------------------------------------------------------
+
+        Precompiled libraries are included in this release for Borland C,
+        Watcom C16, Borland Pascal 7 (real and protected mode) and Borland
+        Turbo Assembler. C and Assembler libraries are included in the MIDAS
+        Sound System main directory, and unit and object files for the Pascal
+        version are in different subdirectories.
+
+        We have now also included cut-down versions of the MIDAS libraries.
+        They are intended to be used in small applications such as demos, for
+        playing .MM modules only (see below). From the cut-down libraries all
+        module loading routines are removed as well as configuration load/save
+        routines and some other unnecessary routines to decrease the size of
+        MIDAS Sound System. Further space can be saved by recompiling the
+        libraries with no stereo support (define NOSTEREO) or by removing
+        unnecessary sound card support.
+
+        The libraries included are:
+
+        midasbc.lib     Borland C/C++ full library
+        midaswc.lib     Borland C/C++ cut-down library
+        midaswc.lib     Watcom C/C++ 16 full library
+        mcutwc.lib      Watcom C/C++ 16 cut-down library
+        midasasm.lib    Turbo Assembler full library
+        mcutasm.lib     Turbo Assembler cut-down library
+
+        To use the Borland Pascal version, copy the units and object files
+        from the correct subdirectory to the main MIDAS directory. The
+        directories are:
+
+        BPFULLRM\       Borland Pascal Real Mode full version
+        BPCUTRM\        Borland Pascal Real Mode cut-down version
+        BPFULLPM\       Borland Pascal Protected Mode full version
+        BPCUTPM\        Borland Pascal Protected Mode cut-down version
+
+----------------------------------------------------------------------------
+2.2. Compiling MIDAS Sound System
+----------------------------------------------------------------------------
+
+        The full source code for MIDAS Sound System is included in the SRC\
+        subdirectory. You can use it to recompile any version of the
+        libraries.  The source code subdirectory also includes make scripts
+        for compiling all the libraries, look for files with extension ".mak".
+        Note that you will need to modify the make scripts to get them work,
+        possibly quite extensively if you are not using exactly the same
+        compilers as we do.  The make scripts also contain information on how
+        to compile the cut-down version of the libraries. In general,
+        recompiling MIDAS may be difficult simple and we suggest it only for
+        experienced programmers.
+
+        Note also that if you only have modified a part of the MIDAS Sound
+        System library, you can extract the other modules from the suitable
+
+
+                                                                              
+
+
+
+MIDAS Sound System               Using MIDAS Sound System               Page 5
+
+
+        library before recompiling. For example, if you have modified from the
+        assembler library mmem.asm and do not have a C compiler, you can
+        extract all object modules from midasasm.lib, copy them to the source
+        code directory, delete mmem.asm and run "make -fmasmlib.mak". A
+        similar procedure can be used with all the libraries. Likewise, you
+        can copy all object files from a suitable Borland Pascal directory if
+        you are working in Pascal.
+
+----------------------------------------------------------------------------
+2.3. .MM Modules
+----------------------------------------------------------------------------
+
+        This version of MIDAS Sound System includes support for .MM modules.
+        The .MM format is basically a sequence of MIDAS Sound System internal
+        structures dumped one after another on the disk, and is therefore very
+        easy to handle. To play .MM modules you simply have to load the whole
+        module as one big chunk to memory or link it to the executable and
+        call midasPrepareMM() with a pointer to the module and the Module
+        Player used. After this the module can be handled as any module loaded
+        with midasLoadModule(). The idea behind this is to be able to remove
+        all module loading routines and file handling, resulting in smaller
+        executables. You can convert any Protracker, Scream Tracker 3 or
+        Multitracker module that MIDAS handles to a .MM module using the
+        enclosed MOD2MM converter. To fully benefit from using .MM modules you
+        should use the cut-down versions of the MIDAS libraries.
+
+        Note that midasPrepareMM() does not work with .MM files over 64kb in
+        protected mode, and you may have problems loading over 64kb files in
+        Borland Pascal real mode as well. The file handling in the Borland
+        Pascal libraries does not support reading or writing blocks over 64kb
+        as such memory blocks can not be allocated under Borland Pascal.
+
+----------------------------------------------------------------------------
+2.4. Assembly Language Considerations
+----------------------------------------------------------------------------
+
+        For the first time MIDAS Sound System now supports programming in pure
+        assembly language. The examples in the ASM_EXP\ directory should be
+        enough to show you how to use the basic features of MIDAS Sound System
+        in assembler. You can also look at the C and Pascal examples, as all
+        the features are also available in assembler. There are a few special
+        points worth mentioning about using MIDAS Sound System with assembler,
+        however.
+
+        All MIDAS Sound System include files assume that Turbo Assembler is in
+        IDEAL mode. Therefore you must keep the compiler in IDEAL mode at
+        least during the inclusion. See the example source code for an example
+        of a proper start of a program file.
+
+        MIDAS Sound System requires that the MIDAS Startup code is run at the
+        beginning of the program. It reallocates the program memory block so
+        that DOS memory allocation can be used and transfers control to a
+        label "main", which must be global. If your program requires control
+        at startup you must rewrite the MIDAS startup code, mstartup.asm.
+        mstartup.obj must be the first object file passed to the linker to
+        ensure it will be used as startup code.
+
+
+                                                                              
+
+
+
+MIDAS Sound System               Using MIDAS Sound System               Page 6
+
+
+        MIDAS Sound System for assembler is compiled in "MODEL LARGE,C" and
+        uses C calling convention for all parameter passing. Because of this
+        you should keep all of your own code that uses MIDAS in "MODEL
+        LARGE,C" as well, and use the Turbo Assembler extended calling syntax
+        to pass the parameters. Take a look at the examples to see how this is
+        done. In general, the format of a calling sequence is:
+
+                call Routine LANG, argument1, argument2, argument 3 ...
+
+        Pointers that are in registers should be passed as a segment offset
+        pair as in "ds si", and you must ensure all parameters are of correct
+        size (words or doublewords).
+
+        As mentioned above, MIDAS Sound System uses the DOS memory allocation
+        routines for its memory allocation. If this does not suit you, you can
+        modify the memAlloc() and memFree() routines in mmem.asm as you wish.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System                   Advanced Topics                    Page 7
+
+
+3. Advanced Topics
+
+----------------------------------------------------------------------------
+3.1. Timer Screen Synchronization
+----------------------------------------------------------------------------
+
+3.1.1. Introduction
+
+        The MIDAS Sound System timer includes built-in support for screen
+        synchronization. This means that you can program the timer to call
+        your own routines every frame, more exactly immediately before the
+        Vertical Retrace, immediately after the Vertical Retrace has started
+        and later during the Vertical Retrace. This enables you to synchronize
+        your program to the screen update to get smooth animation, which
+        otherwise would not be possible with a music system playing in the
+        background.  The routines can also be used for changing VGA hardware
+        registers, such as display start address and scrolling, in correct
+        moments, for triple buffering and for compensating for different
+        machine speeds.
+
+3.1.2. Using Screen Synchronization
+
+        If you wish to use timer screen synchronization, use the procedure
+        outlined below:
+
+        1. BEFORE MIDAS Sound System is initialized, set up the display mode
+        you are intending to use and get the timer screen synchronization
+        value corresponding to that display mode using tmrGetScrSync(). If you
+        are using several display modes with different refresh rates (in
+        practise, different vertical resolutions, although in standard VGA
+        only 240 or 480 scan line modes have different refresh rates) you must
+        activate each of them in turn and get the synchronization values for
+        each of them.
+
+        2. Initialize MIDAS Sound System etc.
+
+        3. Set up the display mode
+
+        4. When you need timer screen synchronization, start it using the
+        function tmrSyncScr(), passing as arguments the timer screen
+        synchronization value from step 1 and pointers to the routines you
+        wish the timer to call. If you do not require support for some
+        routine, pass a NULL pointer (dword 0) instead.
+
+        5. When timer screen synchronization is no longer required, stop it
+        using tmrStopScrSync().
+
+        If you change the display mode to one with a different refresh rate,
+        you must first stop the screen synchronization, change the display
+        mode, and after that re-synchronize the timer. Please note that
+        synchronizing the timer to the screen update takes a while, and as the
+        timer is disabled for that time it may introduce breaks in the music.
+        Therefore we suggest you handle the timer screen synchronization
+        before you start playing music.
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System                   Advanced Topics                    Page 8
+
+
+3.1.3. Timer Screen Synchronized Routines
+
+        tmrSyncScr() takes as arguments pointers to three separate functions,
+        preVR(), immVR() and inVR(), which will be called at different points
+        during the screen timer interrupt. Following is a brief description of
+        each routine and what it is intended for.
+
+        preVR() is called immediately before Vertical Retrace, and must be as
+        short as possible to avoid timer synchronization problems. It is
+        intended mainly for changing the display start address register and
+        updating counters.
+
+        immVR() is called immediately after Vertical Retrace has started, and
+        must be as short as possible to avoid timer synchronization problems.
+        It is intended mainly for changing VGA hardware registers that have to
+        be modified during Vertical Retrace, such as pixel panning.
+
+        inVR() is called after immVR(), and may take a longer time if
+        necessary. However, note that even though spending a long time in
+        inVR() does not induce timer synchronization problems, it may cause
+        problems in music tempo if it takes a too long time. Furthermore, the
+        time spent in inVR() must not exceed one frame. inVR() is mainly
+        intended for changing the palette or updating small portions of
+        screen, such as drawing new characters to a start address scroller.
+
+3.1.4. Waiting for Vertical Retrace
+
+        When synchronizing your program to the screen update, instead of
+        waiting for Vertical Retrace using the VGA hardware registers you must
+        use the screen synchronized timer for this. This is because the music
+        playing interrupt may occur just during the Vertical Retrace, causing
+        you to miss one frame completely. To use the timer for this, set up a
+        preVR() routine that increments a frame counter, and instead of
+        waiting for Vertical Retrace bit wait for the frame counter to change.
+        For example:
+
+        preVR:
+                frameCount = frameCount + 1
+
+        main:
+                ...
+                tmrSyncScr(scrSync, &preVR, NULL, NULL)
+                ...
+                oldCnt = frameCount
+                while oldCnt == frameCount;
+
+        Note that you must declare frameCount as "volatile" (in C) or
+        otherwise ensure that the compiler will not optimize the frame waiting
+        loop to an infinite one, waiting for a register variable to change.
+
+3.1.5. Speed Compensation
+
+        The timer screen synchronization can also be used to compensate for
+        different speeds on different computers. The following pseudo code
+        should illustrate the point:
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System                   Advanced Topics                    Page 9
+
+
+        main loop:
+                Wait for frameCount to change
+                skipFrames = oldFrameCount - frameCount
+                oldFrameCount = frameCount
+                for i = 1 to skipFrames do
+                        MoveEverything
+                DrawEverything
+
+----------------------------------------------------------------------------
+3.2. Reading Music Playing Information
+----------------------------------------------------------------------------
+
+3.2.1. Introduction
+
+        In many applications information about the current status of the music
+        player is needed. This includes, for example, music synchronization in
+        demos and playing several modules after each other. This information
+        can be read from the Module Players, using the GetInformation()
+        function. GetInformation() takes as an argument a pointer to a
+        variable where it will store a pointer to the information structure.
+        The information structure is of type mpInformation, which can be found
+        in mplayer.h, mplayer.inc and mplayer.pas. mpInformation in turn
+        contains a pointer to the channel data structures, which are of type
+        mpChanInfo.
+
+        The members of the mpInformation and mpChanInfo structures should be
+        self-explanatory, and are also documented in the header files.
+
+3.2.2. Examples
+
+        Borland or Watcom C:
+
+                mpInformation   *info;
+                 ...
+                midasMP->GetInformation(&info);
+                printf(
+                 ...
+
+        Borland Pascal:
+
+                var
+                    info : PmpInformation;
+                    MP : PModulePlayer;
+                 ...
+                MP := midasMP;
+                MP^.GetInformation(@info);
+                WriteLn(info^.pos);
+
+        Assembler:
+                info    DD      ?
+                 ...
+                les     bx,[midasMP]
+                call    [dword es:bx+ModulePlayer.GetInformation] LANG, \
+                        seg info offset info
+                les     bx,[info]
+                mov     al,[es:bx+mpInformation.pos]
+
+
+                                                                              
+
+
+
+MIDAS Sound System                 Contact Information                 Page 10
+
+
+4. Contact Information
+
+        If you have any questions, comments or bugs reports, or just want to
+        share some thoughts about programming in general, please contact us.
+        We hope that you understand that supporting a free product is not
+        always very motivating, especially under heavy pressure from outside
+        world like school, and so without any feedback from you the MIDAS
+        project will probably not have a long life. So, whether you like MIDAS
+        or not, please let us know. And if you find MIDAS useful and use it in
+        your programs, a souvenir postcard from your home city would be
+        nice...
+
+        However, please remember: If you use MIDAS Sound System in a program
+        you MUST mention it in the program and documentation.
+
+        e-mail: (preferred)
+                pekangas@sci.fi (Petteri Kangaslampi)
+                jpaana@kauhajoki.fi (Jarno Paananen)
+
+        voice:
+                +358-31-3646764 (Petteri Kangaslampi)
+                +358-31-3422147 (Jarno Paananen)
+                Please restrict your calls to 10.00 - 21.30, Finnish time.
+
+        normal mail:
+                Petteri Kangaslampi
+                Simeoninkuja 4
+                FIN-36240 Kangasala 4
+                Finland
+                Europe
+
+                Jarno Paananen
+                Puskalantie 6
+                FIN-37120 Nokia
+                Finland
+                Europe
+
+
+        If you have a question about a particular subject, here is a list of
+        which of us did what. Naturally you can contact either one of us - we
+        will forward the messages as necessary.
+
+        Petteri Kangaslampi:
+                * General questions about MIDAS
+                * MIDAS architecture, including error handling and memory
+                  allocation
+                * Pascal version
+                * * Pro Audio Spectrum, Windows Sound System and Sound Blaster
+                  Sound Devices
+                * Mixing routines (DSM).
+
+        Jarno Paananen:
+                * Gravis UltraSound Sound Device
+                * All three Module Players
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System                 Distribution Sites                  Page 11
+
+
+5. Distribution Sites
+
+        The latest MIDAS Sound System and MIDAS Module Player should always be
+        available on these fine BBSes:
+
+        WarmBoot BBS            +55-194-265112
+                Sysop: Carlos Henrique Cantu (WarmBooter)
+
+        Moir Brandts Honk       #1: +31-(0)70-3461215 USR/DS 14.4k
+                                #2: +31-(0)70-3457929 ZyXEL 19.2k
+                                #3: +31-(0)70-3452981 LineLink 14.4k
+                Sysop: Hugo Voerman
+
+        The Pantheon            703-378-3553 (changing soon?)
+                Sysops: Farmicus [CiA], Lord Soth [iCE], and Shaggy [iCE
+                Senior Staff]
+
+        ULTiMAT BBS             +32-2-3755651
+                Sysops: Cobra, Access
+
+        Sourcery BBS            +46-8-7674313
+                Sysop: Martin Alexanderson
+                Fidonet: 2:201/406, Freq.
+
+        If you are supposed to be a MIDAS distribution site, but are not on
+        this list, please contact us!
+
+        MIDAS and MIDP can also be found in Internet. Whenever a new version
+        is released, we will try to upload it to at least ftp.cdrom.com,
+        /pub/msdos/demos/incoming/music and x2ftp.oulu.fi.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              
+
+
+
+MIDAS Sound System               'Thank You's and Hellos               Page 12
+
+
+6. 'Thank You's and Hellos
+
+        Otto Chrons: Thanks for the sound cards and programming information
+        and optimization and debugging tips. Also special thanks for making
+        DSMI so that we could know beforehand what mistakes to avoid.
+
+        Teemu Kalvas: Thanks for testing all the zillions of buggy versions of
+        MIDAS. Without you MIDAS would not be nearly as stable as it is now.
+        Also thanks for your ideas and thoughtful feedback and numerous
+        optimization and general design ideas.
+
+        Ben Cooley: Thanks for porting MIDAS Sound System to Windows and sorry
+        we have not kept in touch with you. Good luck with porting this
+        version.
+
+        Stratos, Legend, Yolk etc.: Thanks for composing the way you do.
+
+        Everybody who has offered us feedback regarding MIDAS Sound System:
+        Thank you, and please keep the bug reports coming.
+
+        MIDAS Sound System Distribution Site sysops: Thanks for your support,
+        and please excuse us for forgetting some of you.
+
+        Everybody at class 3K at Tampereen lyseon lukio: Thanks for putting up
+        with us and being such nice people. IB has been painful enough this
+        way, not to think what it might been with some other classmates.
+
+        Plus some traditional hi-hos to:
+                Tomi Henttonen
+                Olli Hinkka
+                Kari-Pekka Koljonen
+                jmagic (forget Phantom's GUS player!)
+                All Virtual Visions members
+                All Parallax members
+                @ (stupid group name BTW)
+                CNCD
+                Complex
+                Inapt
+                Prime
+                Virtual Dreams
+                Bloodhouse
+                Terramarque Software
+                Bart, Dean, Delorean, Destop, Dizzy, Dr. Jekyll, Dr. Skull,
+                Dweezil, Eksec, Fraction, Groo, Hannibal, Heatbeat, Jugi, Vesa
+                Karvonen, Peter Kunath, Marley, Murk, Pauli Porkka, Henryk
+                Richter, Shayera, Stalker, Tsunami, WDO
+
+                And everybody we forgot.
+
+
+
+
+
+
+
+
+
+
+                                                                              
+

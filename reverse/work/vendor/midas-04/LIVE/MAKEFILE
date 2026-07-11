@@ -1,0 +1,130 @@
+#*      INTRO.MAK
+#*
+#* Make script for Live
+#*
+#* Copyright 1995 Petteri Kangaslampi and Jarno Paananen
+#*
+#* This file is part of the MIDAS Sound System, and may only be
+#* used, modified and distributed under the terms of the MIDAS
+#* Sound System license, LICENSE.TXT. By continuing to use,
+#* modify or distribute this file you indicate that you have
+#* read the license and understand and accept it fully.
+#*
+
+
+# Directories:
+
+MIDASDIR = c:\midas
+
+
+# Compilers and options:
+
+CC = wcc
+CCOPTS = -ml -2 -4 -w3 -s -oneatx -i$(MIDASDIR)\src -d__WC16__
+ASM = tasm
+ASMOPTS = -UT310 -ml -zi -m9 -dNOBORDERCOLOR -i$(MIDASDIR)\src -d__WC16__
+
+MIDASLIB = $(MIDASDIR)\mcutwc.lib
+
+
+
+# Intro object files:
+
+INTROOBJS = imain.obj trig.obj sbzoom.obj sbzasm.obj ptunnel.obj \
+            vga.obj palettes.obj music.obj gfillt.obj font.obj \
+            writer.obj fillpoly.obj waterasm.obj ltunnel.obj ltunasm.obj \
+            drawline.obj
+
+
+live.exe : $(INTROOBJS) $(MIDASLIB)
+        wlink @live.wlk
+
+
+# Intro main program files:
+# -------------------------
+
+imain.obj : imain.c intro.h
+        $(CC) $(CCOPTS) -zu imain.c
+
+trig.obj : trig.asm intro.inc
+        $(ASM) $(ASMOPTS) trig.asm
+
+vga.obj : vga.asm intro.inc
+        $(ASM) $(ASMOPTS) vga.asm
+
+palettes.obj : palettes.asm sbzpal.asm ptpal.asm waterpal.asm
+        $(ASM) $(ASMOPTS) palettes.asm
+
+
+# Files for line tunnel:
+# ----------------------
+
+ltunnel.obj : ltunnel.c intro.h
+	$(CC) $(CCOPTS) ltunnel.c
+
+ltunasm.obj : ltunasm.asm intro.inc
+	$(ASM) $(ASMOPTS) ltunasm.asm
+
+drawline.obj : drawline.asm intro.inc
+        $(ASM) $(ASMOPTS) drawline.asm
+
+
+# Files for writer + water:
+# -------------------------
+
+writer.obj : writer.c intro.h
+        $(CC) $(CCOPTS) writer.c
+
+font.obj : font.asm intro.inc
+        $(ASM) $(ASMOPTS) font.asm
+
+fillpoly.obj : fillpoly.asm
+        $(ASM) $(ASMOPTS) fillpoly.asm
+
+waterasm.obj : waterasm.asm intro.inc
+	$(ASM) $(ASMOPTS) waterasm.asm
+
+waterpal.asm : water.pal
+	bin2asm water.pal waterpal.asm 1
+
+
+
+# Files for shadebob zoomer:
+# --------------------------
+
+sbzoom.obj : sbzoom.c intro.h
+        $(CC) $(CCOPTS) sbzoom.c
+
+sbzasm.obj : sbzasm.asm intro.inc
+        $(ASM) $(ASMOPTS) sbzasm.asm
+
+sbzpal.asm : sbzoom.pal
+        bin2asm sbzoom.pal sbzpal.asm 1
+
+
+
+# Files for polygon tunnel:
+# -------------------------
+
+ptunnel.obj : ptunnel.c intro.h
+        $(CC) $(CCOPTS) ptunnel.c
+
+gfillt.obj : gfillt.c intro.h
+        $(CC) $(CCOPTS) gfillt.c
+
+ptpal.asm : ptunnel.pal
+        bin2asm ptunnel.pal ptpal.asm 1
+
+
+
+# Music files:
+# ------------
+
+music.obj : module.asm
+        $(ASM) $(ASMOPTS) music.asm
+
+module.asm : module.mm
+        bin2asm module.mm module.asm 1
+
+module.mm : $(MIDASDIR)\live.mod
+        mod2mm $(MIDASDIR)\live.mod module.mm

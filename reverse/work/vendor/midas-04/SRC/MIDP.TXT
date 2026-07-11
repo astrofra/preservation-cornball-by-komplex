@@ -1,0 +1,472 @@
+.IN 0
+.ce 3
+MIDAS Module Player v1.00b
+--------------------------
+
+Copyright 1995 Petteri Kangaslampi and Jarno Paananen
+
+
+.IN 8
+.NO
+MIDAS MODULE PLAYER IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT
+LIMITED TO, WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE. IN NO EVENT WILL ANY OF THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY DAMAGES CAUSED BY THE USE,
+OR INABILITY TO USE, OF MIDAS MODULE PLAYER.
+
+MIDAS Module Player may freely be distributed as long as no money is
+charged for it, and no attempt is made to restrict further copying,
+distribution and using of MIDAS Module Player. If you have problems
+with this, or do not understand this, contact us.
+.bp
+.HE "MIDAS Module Player"
+.CH "Foreword"
+
+As the version number shows, this is the first version of MIDP which we
+consider fully finished. Do not let it mislead you though, as MIDP is
+now almost a year old and has several releases already behind. All of
+the bugs reported from previous versions, mainly v0.41 and v0.42, have
+been fixed and numerous features have been added. MIDP is now very
+stable, at least on all computers tested, and plays almost every module
+it recognizes correctly. There is no other PC player we know of which
+plays Protracker or Scream Tracker 3 modules better than MIDP.
+
+However, we are still looking for feedback. During this long break in
+MIDAS releases, MIDAS Sound System has gone through an extensive
+rewrite, and is now much cleaner and more modular. Loads of bugs have
+been fixed and new features added, including support for Multitracker
+modules. To understand how well we have succeeded we need your
+comments. Especially we are looking for feedback regarding sound card
+support, as this is a major cause of problems in PC world today, and we
+are also very interested in hearing from you if you find a module that
+MIDP does not play correctly. And of course, if MIDP simply refuses to
+work on your computer please contact us.
+
+When giving us feedback, especially bug reports, please remember to
+include information about your computer system, especially the type of
+your sound card. Please also include, if possible, the MIDAS error list
+given by MIDP on an error situation. It gives us invaluable information
+about the error and, even more importantly, where that error occurred.
+This way we have better chances of finding the bugs. Also, if you
+encouter another kind of problem, such as Expanded Memory Manager
+exception dump or divide error (MIDP has its own internal divide error
+handler), please include as much of the information as possible, at
+least the exact error message and all addresses given. Otherwise we
+will not be able to locate the problem.
+
+Unlike most other module players, MIDP is not commercial, shareware, or
+even cardware. But, if you like MIDP, nothing naturally stops you from
+sending us something, money, a postcard or whatever. We would hope to
+get at least a "Hey, MIDP works with my sound card" e-mail message, but
+please include the type of the sound card as well.
+.bp
+.CH "Configuration"
+
+.SU "Introduction"
+
+When you run MIDAS Module Player for the first time, you will be
+prompted for configuration information including sound card type, port,
+IRQ, DMA and sound output mode. Use cursor up/down to select the
+correct values, Enter to confirm and Escape to exit. The
+detected/recommended values will be highlighted as default, but please
+verify each selection before proceeding as these might be incorrect.
+The configuration information is saved to file MIDP.CFG, in the same
+directory with MIDP.EXE, and will be used in the future when MIDP is
+run.
+
+After the initial configuration, you can use the command line arguments
+to override the settings for one session, or use the command line
+option "-r" to completely reconfigure MIDP. Settings forced using the
+command line arguments are not saved to MIDP.CFG.
+
+.SU "Sound Devices"
+
+MIDAS uses all sound cards through modules called Sound Devices. One
+Sound Device can include support for several sound cards which are
+functionally alike. In the configuration screen each supported sound
+card will appear as a separate selection, but if you later wish to
+force the sound card type from command line you must set both Sound
+Device and sound card type numbers.
+
+Currently available Sound Devices are:
+
+1. Gravis UltraSound
+.IN 16
+.LI 2 "*"
+Available sound card types: (-cx option)
+.IN 24
+.LI 4 "1 -"
+Gravis UltraSound (GF1 hardware mixing)
+.IN 16
+.LI 2 "*"
+All Gravis UltraSound versions
+.IN 8
+
+2. Media Vision Pro Audio Spectrum series
+.IN 16
+.LI 2 "*"
+Available sound card types: (-cx option)
+.IN 24
+.LI 4 "1 -"
+Pro Audio Spectrum
+.LI 4 "2 -"
+Pro Audio Spectrum plus
+.LI 4 "3 -"
+Pro Audio Spectrum 16
+.IN 16
+.LI 2 "*"
+Note that with normal PAS mixing rates over 22kHz may not work
+properly.
+.IN 8
+
+3. Microsoft Windows Sound System
+.IN 16
+.LI 2 "*"
+Available sound card types: (-cx option)
+.IN 24
+.LI 4 "1 -"
+Windows Sound System (Crystal/Analog CODEC)
+.IN 16
+.LI 2 "*"
+Should also work with other WSS compatible cards,
+such as Compaq Business Audio, and is tested to work
+with Audiotrix Pro.
+.LI 2 "*"
+Note that there is no autodetection for this Sound
+Device.
+.IN 8
+.bp
+4. Creative Labs Sound Blaster series
+.IN 16
+.LI 2 "*"
+Available sound card types: (-cx option)
+.IN 24
+.LI 4 "1 -"
+Sound Blaster 1.0 or clone (DSP v1.xx)
+.LI 4 "2 -"
+Sound Blaster 1.5 (DSP v2.00)
+.LI 4 "3 -"
+Sound Blaster 2.0 (DSP v2.01)
+.LI 4 "4 -"
+Sound Blaster Pro (DSP v3.xx)
+.LI 4 "5 -"
+Sound Blaster 16 (DSP v4.00+)
+.IN 8
+
+5. No Sound
+.IN 16
+.LI 2 "*"
+Available sound card types: (-cx option)
+.IN 24
+.LI 4 "1 -"
+No Sound
+.IN 16
+.LI 2 "*"
+Plays nothing, is always used when nothing else is
+detected.
+.LI 2 "*"
+Just to allow sound synchronization even with no sound
+card.
+.IN 8
+.NO
+
+.bp
+.CH "MIDAS Module Player usage"
+
+.SU "Command line syntax"
+
+The command line syntax for MIDP is:
+.IN 16
+
+MIDP [options] <filenames> [options]
+
+At least one module file name must be included. MIDP
+also supports multiple modules and wildcards.
+.IN 8
+
+Options:
+.IN 16
+.LI 8 "-r"
+Reconfigure MIDAS Module Player. This prompts for new Sound Card, Port,
+IRQ and DMA values and output mode, and saves them to MIDP.CFG for
+later use.
+.LI 8 "-sx"
+Force Sound Device x (1 = GUS, 2 = PAS, 3 = WSS, 4 = SB, 5 = No Sound)
+.LI 8 "-cx"
+Force sound card type x (depends on Sound Device)
+.LI 8 "-pxxx"
+Force I/O port xxx (hex) for Sound Device
+.LI 8 "-ix"
+Force IRQ x for Sound Device
+.LI 8 "-dx"
+Force DMA channel x for Sound Device
+.LI 8 "-mxxxx"
+Set mixing rate to xxxx Hz
+.LI 8 "-oxxx"
+Force output mode (8 = 8-bit, 1 = 16-bit, s = stereo, m = mono). Can be
+combined, eg. 8-bit mono is "-o8m"
+.LI 8 "-b"
+Disable Virtual DMA usage. Use this if you experience problems related
+to Virtual DMA Servies.
+.LI 8 "-e"
+Disable EMS usage
+.LI 8 "-t"
+Disable BPM tempos in Protracker modules. Necessary with some (usually
+older) modules that attempt to use speeds over 31.
+.LI 8 "-g"
+Disable DMP-compatible 8-command panning in Protracker modules. Needed
+if the module uses the command 8 for other purposes, such as music
+synchronization in a demo.
+.LI 8 "-x"
+Enable extended octaves in Protracker modules. May be needed with some
+modules using notes in octaves above 3 or below 1. If this option is
+not enabled the notes may be cutted at the Amiga period limits.
+.LI 8 "-u"
+Enable Surround sound (affects only GUS). Uses twice the amount of GUS
+memory, but allows Surround panning. MIDP is the only player we know of
+that supports surround panning on GUS.
+.LI 8 "-ax"
+Force amplification level x. 64 is normal (no amplification), 128 200%
+etc.
+.br
+.IN 16
+------
+.br
+.LI 8 "-v"
+Disable real VU-meters (saves memory)
+.LI 8 "-y"
+Disable timer screen synchronization
+.LI 8 "-Y"
+Enable timer screen synchronization also in DOS shell
+.LI 8 "-O"
+Scramble module playing order
+.LI 8 "-nxx"
+Default panning. Channels normally on left are panned to -xx, and those
+on right to xx. For example, if you are using headphones, try -n24.
+.LI 8 "-M"
+Display free memory information
+.IN 8
+.NO
+
+Also '/' is recognized as option delimiter.
+.br
+Note that the options are CASE SENSITIVE.
+
+.SU "Environment variables"
+
+MIDAS Sound System specific options (above the line in the command
+line option list above) can also be set to environment variable MIDAS,
+so that they do not have to be entered every time. The syntax is
+exactly the same as with the command line options. Also other programs
+that use MIDAS Sound System will probably recognize the environment
+variable.
+
+Any MIDP command line options can also be placed in environment
+variable MIDP, including also those below the line. This is preferred
+over the use of MIDAS environment. Note that you can override the
+options set in the environment variable from the command line.
+
+Example:
+.IN 16
+SET MIDAS=-s3 -p530 -i9 -d3 -om -m32000
+.IN 8
+
+.SU Keyboard
+
+When playing a module, MIDP can be controlled using the following keys:
+
+.IN 16
+.LI 16 "Alt-X"
+Quick exit
+.LI 16 "Esc"
+Exit with fade out
+.LI 16 "+/-"
+Increase / Decrease master volume
+.LI 16 "D"
+Jump to DOS shell
+.LI 16 "Left/Right"
+Next / Previous position
+.LI 16 "Up/Down"
+Select active channel
+.LI 16 "Page Up/Down"
+Scroll instrument list
+.LI 16 "Tab"
+Toggle instrument list mode
+.LI 16 "1-9, 0"
+Toggle channels on/off
+.LI 16 ",/."
+Adjust active channel panning left / right
+.LI 16 "M"
+Set active channel panning to middle
+.LI 16 "L"
+Set active channel panning to left
+.LI 16 "R"
+Set active channel panning to right
+.LI 16 "U"
+Set active channel panning to surround
+.LI 16 "T"
+Toggle active channel on/off
+.LI 16 "P"
+Pause module. Pree P to continue
+.LI 16 "Space"
+Mute playing. Press Space again to un-mute
+.LI 16 "N"
+Next module
+.LI 16 "A"
+Amplification adjustment screen. See below for more information.
+.LI 16 "V"
+Show MIDAS and MIDP version information.
+.LI 16 "F"
+Display free memory information
+.LI 16 "B"
+Display free memory blocks
+.LI 16 "F1, h"
+Display keyboard help
+.LI 16 "F8"
+Toggle screen blanking on/off
+.IN 8
+.bp
+.SU Amplification
+
+When playing multiple channel digital sound, the output volume can get
+very low and sound quality with 8-bit sound cards decreases. MIDAS
+Sound System compensates for this using amplification. When playing on
+a 8-bit sound card, the sound is amplified as a default and also on
+16-bit sound cards amplification can be added. This increases volume
+level and also improves sound quality on 8-bit cards. You can override
+the default amplification level using the "-ax" command line option,
+and adjust it while playing by pressing the "A" key.
+
+Keys in amplification adjustment screen:
+
+.IN 15
+.LI 17 " ./,"
+Multiply / divide current amplification level by two.
+.IN 16
+.LI 16 "+/-"
+Add / substract 16 to the current amplification level
+.LI 16 "V"
+Toggle output VU-meter mode between mixer output and channel VU meter
+sum.
+.LI 16 "A"
+Toggle automatic amplification limits on/off.
+.IN 8
+
+Note that on 16-bit sound cards the sound will get distorted very
+quickly if you use too high amplification values. This is because there
+is no clipping in the sound mixer and the output will wrap. On 8-bit
+sound cards the mixing output is clipped and thus you can use higher
+amplification values without problems.
+
+.SU "Archive support"
+
+MIDP also includes a primitive archive support, built as we ourselves
+needed it. When playing a file with extension .ZIP, .MDZ, .S3Z or .MTZ
+MIDP first decompresses the file using PKUNZIP to the directory set by
+environment variable "TEMP", or to C:\ if none is set. Then the first
+file from that directory with same name as the archive (but with any
+extension) will be played and deleted immediately after playing starts.
+When multiple archives are being played, the decompression of the next
+start immediately after starting to play the previous one, to give
+almost uninterrupted background music.
+
+Archive support will be enhanced in the future, after we implement some
+kind of configuration file, to include any archivers and extensions.
+But for now this must do. Please also note that the archive support
+fails if the archive is stored in the TEMP directory.
+
+.bp
+.CH "The future"
+
+MIDAS Module Player, as the whole MIDAS Sound System itself, is under
+constant development. As time permits we will add more features to
+MIDP, both to test new functions in MIDAS and to enhance its
+usefulness. MIDP currently represents what we think a module player
+should be like, but we are open to suggestions. So if you feel there is
+an important feature missing, or think that the existing ones are
+somehow faulty or unintuitive to use, do not hesitate to contact us.
+
+Features planned for some future MIDP version:
+
+- Configuration file, including customizable archiver support, colors,
+character set etc.
+
+- Module-specific configuration, probably added to 4DOS descript.ion
+file in the form of MIDP command line options for each module file
+
+- File selector with 4DOS description support
+
+.bp
+.CH "Contact information"
+
+If you have questions, comments, suggestions or bug reports about MIDAS
+Module Player or MIDAS Sound System itself, please contact us. The
+preferred method is naturally e-mail, because it is fast, inexpensive
+and lets us deal with the messages when we have time. Note also that we
+probably will not be able to answer your letters unless you include a
+stamped and addressed return envelope (International Reply Coupon is
+OK too).
+
+e-mail:
+.IN 16
+pekangas@sci.fi (Petteri Kangaslampi)
+.br
+jpaana@kauhajoki.fi (Jarno Paananen)
+.IN 8
+
+voice:
+.IN 16
++358-31-3646764 (Petteri Kangaslampi)
+.br
++358-31-3422147 (Jarno Paananen)
+.br
+Please restrict your calls to 10.00 - 21.30, Finnish
+time.
+.IN 8
+
+normal mail:
+.IN 16
+.LT "Petteri Kangaslampi"
+.LT "Simeoninkuja 4"
+.LT "FIN-36240 Kangasala 4"
+.LT "Finland"
+.LT "Europe"
+.sp
+.LT "Jarno Paananen"
+.LT "Puskalantie 6"
+.LT "FIN-37120 Nokia"
+.LT "Finland"
+.LT "Europe"
+
+.bp
+.CH Distribution sites
+
+The latest MIDAS Sound System and MIDAS Module Player should always be
+available on these fine BBSes:
+
+.LT "WarmBoot BBS            +55-194-265112
+.LT "        Sysop: Carlos Henrique Cantu (WarmBooter)
+.sp
+.LT "Moir Brandts Honk       #1: +31-(0)70-3461215 USR/DS 14.4k
+.LT "                        #2: +31-(0)70-3457929 ZyXEL 19.2k
+.LT "                        #3: +31-(0)70-3452981 LineLink 14.4k
+.LT "        Sysop: Hugo Voerman
+.sp
+.LT "The Pantheon            703-378-3553 (changing soon?)
+.LT "        Sysops: Farmicus [CiA], Lord Soth [iCE], and Shaggy [iCE
+.LT "        Senior Staff]
+.sp
+.LT "ULTiMAT BBS             +32-2-3755651
+.LT "        Sysops: Cobra, Access
+.sp
+.LT "Sourcery BBS            +46-8-7674313
+.LT "        Sysop: Martin Alexanderson
+.LT "        Fidonet: 2:201/406, Freq. "MIDAS" for latest version
+
+If you are supposed to be a MIDAS distribution site, but are not on
+this list, please contact us!
+
+MIDAS and MIDP can also be found in Internet. Whenever a new version is
+released, we will try to upload it to at least ftp.cdrom.com,
+/pub/msdos/demos/incoming/music and x2ftp.oulu.fi.

@@ -165,14 +165,14 @@ def candidate_function_map() -> list[dict[str, str]]:
             "proposed_name": "dispatch_scene_by_music_position",
             "subsystem": "render_dispatch",
             "confidence": "high",
-            "evidence": "Selects scene by threshold table at 0x40e068 and dispatches through the switch table at 0x4013fc.",
+            "evidence": "Consumes MIDAS play status position, updates scene-change timing globals, and dispatches through the threshold table at 0x40e068 and the switch table at 0x4013fc.",
         },
         {
             "va": "0x00401430",
             "proposed_name": "run_main_loop",
             "subsystem": "main_loop",
             "confidence": "high",
-            "evidence": "Uses PeekMessageA/GetMessageA/TranslateMessage/DispatchMessageA, then renders and swaps buffers.",
+            "evidence": "Seeds demo and first-scene timing from GetTickCount, pumps PeekMessageA/GetMessageA/TranslateMessage/DispatchMessageA, polls midas06.dll MIDASgetPlayStatus, then renders and swaps buffers.",
         },
         {
             "va": "0x00401510",
@@ -621,6 +621,119 @@ def scene_helper_rows() -> list[dict[str, str]]:
     ]
 
 
+def timing_global_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "address": "0x005d1710",
+            "size": "qword",
+            "proposed_name": "g_demo_elapsed_seconds",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "none found",
+            "confidence": "high",
+            "notes": "Computed as (current_tick_ms - g_demo_start_tick_ms) * 0.001. No downstream absolute reads found yet.",
+        },
+        {
+            "address": "0x005d1718",
+            "size": "dword",
+            "proposed_name": "g_cached_music_position",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "none found",
+            "confidence": "medium",
+            "notes": "Per-frame copy of MIDASplayStatus.position used alongside the threshold-based scene dispatch logic.",
+        },
+        {
+            "address": "0x005d1728",
+            "size": "qword",
+            "proposed_name": "g_scene_elapsed_seconds",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "scene families",
+            "confidence": "high",
+            "notes": "Computed as (current_tick_ms - g_scene_start_tick_ms) * 0.001 and reused across the renderer.",
+        },
+        {
+            "address": "0x005d1730",
+            "size": "dword",
+            "proposed_name": "g_demo_start_tick_ms",
+            "producer": "run_main_loop",
+            "consumers": "dispatch_scene_by_music_position",
+            "confidence": "high",
+            "notes": "Initial GetTickCount() snapshot written once when the main loop starts.",
+        },
+        {
+            "address": "0x005d1734",
+            "size": "dword",
+            "proposed_name": "g_scene_start_tick_ms",
+            "producer": "run_main_loop;dispatch_scene_by_music_position",
+            "consumers": "dispatch_scene_by_music_position",
+            "confidence": "high",
+            "notes": "Initialized at loop start and reset only when the resolved scene index changes.",
+        },
+        {
+            "address": "0x005d1738",
+            "size": "dword",
+            "proposed_name": "g_cached_music_row",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "none found",
+            "confidence": "medium",
+            "notes": "Per-frame copy of MIDASplayStatus.row taken from offset +8 of the status structure.",
+        },
+        {
+            "address": "0x005d1750",
+            "size": "dword",
+            "proposed_name": "g_midas_play_status_position",
+            "producer": "midas06.dll!MIDASgetPlayStatus",
+            "consumers": "dispatch_scene_by_music_position",
+            "confidence": "high",
+            "notes": "Compared against the scene threshold table. Signature and field layout match Housemarque Audio System 0.7 beta 1.",
+        },
+        {
+            "address": "0x005d1754",
+            "size": "dword",
+            "proposed_name": "g_midas_play_status_pattern",
+            "producer": "midas06.dll!MIDASgetPlayStatus",
+            "consumers": "none found",
+            "confidence": "medium",
+            "notes": "Second field in the 0.7 MIDASplayStatus structure. No binary reads found yet.",
+        },
+        {
+            "address": "0x005d1758",
+            "size": "dword",
+            "proposed_name": "g_midas_play_status_row",
+            "producer": "midas06.dll!MIDASgetPlayStatus",
+            "consumers": "dispatch_scene_by_music_position",
+            "confidence": "high",
+            "notes": "Copied into g_cached_music_row each frame. Offset matches MIDASplayStatus.row.",
+        },
+        {
+            "address": "0x005d175c",
+            "size": "dword",
+            "proposed_name": "g_midas_play_status_sync_info",
+            "producer": "midas06.dll!MIDASgetPlayStatus",
+            "consumers": "none found",
+            "confidence": "medium",
+            "notes": "Fourth field in the 0.7 MIDASplayStatus structure. No binary reads found yet.",
+        },
+        {
+            "address": "0x005d1760",
+            "size": "dword",
+            "proposed_name": "g_current_scene_index",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "dispatch_scene_by_music_position",
+            "confidence": "high",
+            "notes": "Scene-family index selected from MIDAS position thresholds and used for the jump-table dispatch.",
+        },
+        {
+            "address": "0x005d1764",
+            "size": "dword",
+            "proposed_name": "g_previous_scene_index",
+            "producer": "dispatch_scene_by_music_position",
+            "consumers": "none found",
+            "confidence": "high",
+            "notes": "Snapshot of the prior scene index taken immediately before any scene-change update.",
+        },
+    ]
+
+
 def write_csv(path: pathlib.Path, rows: list[dict[str, object]], fieldnames: list[str]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -683,6 +796,11 @@ def main() -> None:
         OUT_DIR / "planet-scene-helper-map.csv",
         scene_helper_rows(),
         ["va", "proposed_name", "callers", "parameter_guess", "confidence", "evidence"],
+    )
+    write_csv(
+        OUT_DIR / "planet-timing-globals.csv",
+        timing_global_rows(),
+        ["address", "size", "proposed_name", "producer", "consumers", "confidence", "notes"],
     )
     write_csv(
         OUT_DIR / "planet-wndproc-messages.csv",

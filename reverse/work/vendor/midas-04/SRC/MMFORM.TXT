@@ -1,0 +1,32 @@
+        .MM file format
+        ---------------
+
+The .MM file format (short for MIDAS Module) is designed to allow fast
+and simple loading of the modules, and even linking of the modules
+directly to the executable file, instead of maximum flexibility or
+minimum size. Therefore the file mainly consists of internal MIDAS
+structures. Note, however, that in the structures the pointer values
+are completely meaningless, and the file has to be processed in
+sequential order, building the necessary pointers on the fly.
+
+The file format is as following:
+
+        mpModule        module;
+        uchar           orders[module.songLength];
+        mpInstrument    instruments[module.numInsts];
+        mpPattern       patterns[module.numPatts];
+        uchar           instsUsed[module.numInsts];
+
+        After this follow the samples, in 8-bit delta format. All
+        samples which are used (instsUsed[i] == 1) are stored as
+        instruments[i].length bytes. To convert samples to raw format,
+        use the following routine:
+
+        unsigned        a;
+        uchar           b;
+        b = 0;
+        for ( a = 0; a < inst.length; a++ )
+        {
+            b = b + sample[a];
+            sample[a] = b;
+        }

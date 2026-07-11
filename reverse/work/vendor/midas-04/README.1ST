@@ -1,0 +1,60 @@
+Some miscellaneous notes regarding MIDAS Sound System v0.40a.
+-------------------------------------------------------------
+
+PLEASE READ THIS BEFORE CONTINUING!
+
+Finally it is here, a baffling four months late. We hope that
+this MIDAS release proves to be worth the wait. At least MIDAS
+is now much easier to use than before, more portable and can
+finally be used with pure assembler only. There is a bit more
+documentation and all libraries are included also in compiled
+form to decrease compilation problems. Multitracker modules are
+now supported, and you can use MIDAS with Borland Pascal 7 in
+protected mode.
+
+Read MIDAS.DOC before continuing. It contains instructions on
+how to compile the examples and some other important
+information. Also read the example source code through and make
+sure you understand what is done.
+
+The SRC\ directory contains all the source code for MIDAS Sound
+System. Included is also full source code for MIDAS Module
+Players. All necessary make scripts (*.mak files) are also
+included in the source directory. The MIDAS Sound System source
+code includes a lot of information on how to use the system, and
+you should check there first if you run intro problems.
+Especially important is the simplified MIDAS Programming
+Interface, MIDAS.*. Read the header file through before
+attempting to use it yourself.
+
+There is still very little documentation. If you have problems
+check the source code first, but do not hesitate to contact us.
+More documentation will be available on later releases.
+
+Not all the features are tested. Especially, we have not checked
+the cut-down Pascal libraries, and there might be some problems
+related to Sound Blaster series sound cards when using Watcom C.
+Borland Pascal 7 Protected Mode support might also be somewhat
+unstable, although we have not encountered any problems
+ourselves for at least a month now. Please report any bugs and
+anomalities you encounter to us, with as detailed description of
+the problem and your equipment and configuration as possible.
+
+This version of MIDAS Sound System consists of 1.4Mb of source
+code. Everything is included here for you. Creating MIDAS has
+not always been fun, far from it, and it has taken us
+considerable amounts of time better spent studying etc. Still we
+feel it has been worth it, and hope you agree.
+
+Any feedback, whether positive or negative, is always welcome.
+Please use Internet e-mail if possible - it's fast, inexpensive
+and lets us deal with the messages when we have time. Our final
+examinations are starting in a few days now, so do not be
+disappointed if you do not get an answer right away.
+
+I hope this has not been very confusing. I'm too tired to think
+straight anymore, and am sick and tired of building this MIDAS
+release package. Anyway, have fun and remember (once again):
+Read the source code!
+
+Petteri Kangaslampi, pekangas@sci.fi
