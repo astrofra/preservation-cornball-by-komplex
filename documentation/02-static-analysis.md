@@ -28,7 +28,9 @@ Set up a repeatable static-analysis workspace, install at least one open-source 
    - [reverse/work/notes/initial-function-map.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/initial-function-map.md)
 9. Ran the first interactive Cutter/Rizin correction pass:
    - [reverse/work/notes/cutter-pass-01.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-01.md)
-10. Saved a reusable Rizin project database:
+10. Ran the second static pass on the Win32/OpenGL bootstrap path:
+   - [reverse/work/notes/cutter-pass-02.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-02.md)
+11. Saved a reusable Rizin project database:
    - [reverse/work/projects/cutter/planet-pass-01.rzdb](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/projects/cutter/planet-pass-01.rzdb)
 
 ## Cutter Installation
@@ -59,6 +61,7 @@ Created under `reverse/work/exports/`:
 - [planet-function-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-function-map.csv)
 - [planet-texture-slots.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-texture-slots.csv)
 - [planet-scene-dispatch.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-dispatch.csv)
+- [planet-wndproc-messages.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-wndproc-messages.csv)
 
 ## Cutter Pass 01 Findings
 
@@ -93,6 +96,24 @@ The corrected pass supports the following subsystem split:
 - `main` creates the window, initializes audio, starts playback, shows the window, and calls the main loop.
 - `run_main_loop` owns the Win32 message pump, `MIDASgetPlayStatus` polling, frame clear/reset, dispatch call, and `SwapBuffers`.
 - `dispatch_scene_by_music_position` uses the threshold table at `0x0040e068` and the jump table at `0x004013fc`.
+
+### Win32 and GL bootstrap
+
+Pass 02 recovered the bootstrap path in more detail:
+
+- `main_wndproc` is now recovered as a real `stdcall` window procedure from `0x00401680` to `0x00401850`
+- `configure_viewport_and_projection` at `0x00401090` owns `glViewport` plus the `gluPerspective` setup
+- `initialize_gl_state_and_resources` at `0x004010f0` owns first-time GL state, fog/culling setup, staged texture uploads, and the initial projection sizing
+
+Recovered handled messages:
+
+- `WM_CREATE`
+- `WM_DESTROY`
+- `WM_SIZE`
+- `WM_PAINT`
+- `WM_CLOSE`
+- `WM_KEYDOWN`
+- `WM_MOUSEMOVE`
 
 ### Scene dispatch
 
@@ -168,7 +189,7 @@ The current map is not final, but it is already useful enough to:
 
 Continue the static pass interactively in Cutter:
 
-1. recover a clean function boundary for `main_wndproc` at `0x00401680`
-2. name the resize helpers around `0x00401090` and `0x004010f0`
-3. refine the six scene renderer families into concrete effect routines
-4. document the timing globals around `0x005d1710` through `0x005d1738`
+1. refine the six scene renderer families into concrete effect routines
+2. document the timing globals around `0x005d1710` through `0x005d1738`
+3. determine whether the helper at `0x00401000` is geometry generation, a lookup-table builder, or both
+4. continue naming input/state globals now that `g_mouse_x` and `g_mouse_y` are anchored

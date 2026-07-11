@@ -140,6 +140,20 @@ def find_string_xrefs(pe: pefile.PE, data: bytes, label: bytes) -> dict[str, obj
 def candidate_function_map() -> list[dict[str, str]]:
     return [
         {
+            "va": "0x00401090",
+            "proposed_name": "configure_viewport_and_projection",
+            "subsystem": "opengl_view",
+            "confidence": "high",
+            "evidence": "Calls glViewport, switches to GL_PROJECTION, loads identity, and calls gluPerspective with width/height-derived aspect ratio.",
+        },
+        {
+            "va": "0x004010f0",
+            "proposed_name": "initialize_gl_state_and_resources",
+            "subsystem": "opengl_init",
+            "confidence": "medium",
+            "evidence": "Sets core GL state, seeds five texture IDs and uploads 256x256 RGBA blocks, configures fog/culling, then calls the viewport/projection helper.",
+        },
+        {
             "va": "0x004012e0",
             "proposed_name": "dispatch_scene_by_music_position",
             "subsystem": "render_dispatch",
@@ -165,7 +179,7 @@ def candidate_function_map() -> list[dict[str, str]]:
             "proposed_name": "main_wndproc",
             "subsystem": "win32_init",
             "confidence": "high",
-            "evidence": "Passed to RegisterClassA and handles window creation, resize, and shutdown messages.",
+            "evidence": "Window procedure handling WM_CREATE, WM_DESTROY, WM_SIZE, WM_PAINT, WM_CLOSE, WM_KEYDOWN, and WM_MOUSEMOVE.",
         },
         {
             "va": "0x00401860",
@@ -348,6 +362,59 @@ def scene_dispatch_rows() -> list[dict[str, str]]:
     ]
 
 
+def wndproc_message_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "message_name": "WM_CREATE",
+            "message_code": "0x0001",
+            "handler_va": "0x00401715",
+            "action": "Acquire HDC, set pixel format, create/make current WGL context, initialize GL state/resources, then size the viewport from GetClientRect.",
+        },
+        {
+            "message_name": "WM_DESTROY",
+            "message_code": "0x0002",
+            "handler_va": "0x004016da",
+            "action": "Delete WGL context, release the window DC, and call PostQuitMessage(0).",
+        },
+        {
+            "message_name": "WM_SIZE",
+            "message_code": "0x0005",
+            "handler_va": "0x004016ae",
+            "action": "Call GetClientRect and forward right/bottom to configure_viewport_and_projection.",
+        },
+        {
+            "message_name": "WM_PAINT",
+            "message_code": "0x000f",
+            "handler_va": "0x004017d1",
+            "action": "Wrap a minimal BeginPaint/EndPaint pair without extra rendering work.",
+        },
+        {
+            "message_name": "WM_CLOSE",
+            "message_code": "0x0010",
+            "handler_va": "0x00401809",
+            "action": "Delete the WGL context, release the DC, clear GL globals, and destroy the window.",
+        },
+        {
+            "message_name": "WM_KEYDOWN",
+            "message_code": "0x0100",
+            "handler_va": "0x004017f7",
+            "action": "Call PostQuitMessage(0), providing the demo's immediate exit-on-key behavior.",
+        },
+        {
+            "message_name": "WM_MOUSEMOVE",
+            "message_code": "0x0200",
+            "handler_va": "0x004017b7",
+            "action": "Store LOWORD/HIWORD(lParam) into globals at 0x005d173c and 0x005d1740.",
+        },
+        {
+            "message_name": "default",
+            "message_code": "*",
+            "handler_va": "0x00401797",
+            "action": "Fallback to DefWindowProcA for messages outside the explicitly handled set.",
+        },
+    ]
+
+
 def write_csv(path: pathlib.Path, rows: list[dict[str, object]], fieldnames: list[str]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -400,6 +467,11 @@ def main() -> None:
         OUT_DIR / "planet-scene-dispatch.csv",
         scene_dispatch_rows(),
         ["scene_index", "threshold", "target_va", "target_name"],
+    )
+    write_csv(
+        OUT_DIR / "planet-wndproc-messages.csv",
+        wndproc_message_rows(),
+        ["message_name", "message_code", "handler_va", "action"],
     )
 
 

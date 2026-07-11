@@ -1,10 +1,19 @@
 e scr.color=false
+s 0x00401090
+afn configure_viewport_and_projection
+s 0x004010f0
+afn initialize_gl_state_and_resources
 s 0x004012e0
 afn dispatch_scene_by_music_position
 s 0x00401430
 afn run_main_loop
 s 0x00401510
 afn main
+s 0x00401680
+af
+afu 0x00401850
+afn main_wndproc
+afc stdcall
 s 0x00401860
 afn setup_pixel_format
 s 0x00401930
@@ -35,8 +44,6 @@ s 0x004036bb
 afn load_tga_256x256_rgba
 s 0x004045c0
 afn crt_startup_main
-s 0x00401680
-f+ main_wndproc 1
 s 0x0040e068
 f+ scene_threshold_table 40
 s 0x004013fc
@@ -47,6 +54,10 @@ s 0x005d1708
 f+ g_midas_module_handle 4
 s 0x005d170c
 f+ g_main_hwnd 4
+s 0x005d173c
+f+ g_mouse_x 4
+s 0x005d1740
+f+ g_mouse_y 4
 s 0x005d1744
 f+ g_main_hdc 4
 s 0x005d1748

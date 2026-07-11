@@ -1,0 +1,9 @@
+message_name,message_code,handler_va,action
+WM_CREATE,0x0001,0x00401715,"Acquire HDC, set pixel format, create/make current WGL context, initialize GL state/resources, then size the viewport from GetClientRect."
+WM_DESTROY,0x0002,0x004016da,"Delete WGL context, release the window DC, and call PostQuitMessage(0)."
+WM_SIZE,0x0005,0x004016ae,Call GetClientRect and forward right/bottom to configure_viewport_and_projection.
+WM_PAINT,0x000f,0x004017d1,Wrap a minimal BeginPaint/EndPaint pair without extra rendering work.
+WM_CLOSE,0x0010,0x00401809,"Delete the WGL context, release the DC, clear GL globals, and destroy the window."
+WM_KEYDOWN,0x0100,0x004017f7,"Call PostQuitMessage(0), providing the demo's immediate exit-on-key behavior."
+WM_MOUSEMOVE,0x0200,0x004017b7,Store LOWORD/HIWORD(lParam) into globals at 0x005d173c and 0x005d1740.
+default,*,0x00401797,Fallback to DefWindowProcA for messages outside the explicitly handled set.

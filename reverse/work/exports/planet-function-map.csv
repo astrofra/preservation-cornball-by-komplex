@@ -1,8 +1,10 @@
 va,proposed_name,subsystem,confidence,evidence
+0x00401090,configure_viewport_and_projection,opengl_view,high,"Calls glViewport, switches to GL_PROJECTION, loads identity, and calls gluPerspective with width/height-derived aspect ratio."
+0x004010f0,initialize_gl_state_and_resources,opengl_init,medium,"Sets core GL state, seeds five texture IDs and uploads 256x256 RGBA blocks, configures fog/culling, then calls the viewport/projection helper."
 0x004012e0,dispatch_scene_by_music_position,render_dispatch,high,Selects scene by threshold table at 0x40e068 and dispatches through the switch table at 0x4013fc.
 0x00401430,run_main_loop,main_loop,high,"Uses PeekMessageA/GetMessageA/TranslateMessage/DispatchMessageA, then renders and swaps buffers."
 0x00401510,main,startup,high,"Creates the window, initializes MIDAS, shows the window, primes GL, then calls the main loop."
-0x00401680,main_wndproc,win32_init,high,"Passed to RegisterClassA and handles window creation, resize, and shutdown messages."
+0x00401680,main_wndproc,win32_init,high,"Window procedure handling WM_CREATE, WM_DESTROY, WM_SIZE, WM_PAINT, WM_CLOSE, WM_KEYDOWN, and WM_MOUSEMOVE."
 0x00401860,setup_pixel_format,opengl_init,high,"Calls ChoosePixelFormat and SetPixelFormat, references setup error strings."
 0x00401930,render_scene_case_0_7,scene_render,medium,Dispatched by cases 0 and 7 from the main scene switch.
 0x00401c00,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
