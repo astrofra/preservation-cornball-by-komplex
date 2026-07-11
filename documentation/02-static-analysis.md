@@ -36,6 +36,8 @@ Set up a repeatable static-analysis workspace, install at least one open-source 
    - [reverse/work/notes/cutter-pass-03.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-03.md)
 13. Ran the fourth static pass on timing globals and MIDAS status layout:
    - [reverse/work/notes/cutter-pass-04.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-04.md)
+14. Ran the fifth static pass on reusable geometry helpers:
+   - [reverse/work/notes/cutter-pass-05.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-05.md)
 
 ## Cutter Installation
 
@@ -67,6 +69,7 @@ Created under `reverse/work/exports/`:
 - [planet-scene-dispatch.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-dispatch.csv)
 - [planet-scene-family-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-family-map.csv)
 - [planet-scene-helper-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-helper-map.csv)
+- [planet-geometry-helpers.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-geometry-helpers.csv)
 - [planet-timing-globals.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-timing-globals.csv)
 - [planet-wndproc-messages.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-wndproc-messages.csv)
 
@@ -203,10 +206,10 @@ These mappings are exported in [planet-scene-family-map.csv](/C:/works/projects/
 
 The scene families reuse a small support library:
 
-- `draw_dual_texture_panel_pair` at `0x00403760`
+- `draw_dual_texture_bipyramid` at `0x00403760`
 - `draw_soft_blended_quad` at `0x00403c90`
 - `draw_centered_textured_quad` at `0x00403d70`
-- `draw_cached_ring_strip` at `0x00403e40`
+- `draw_cached_tube_shell` at `0x00403e40`
 - `draw_jittered_overlay_quad` at `0x00403b40`
 - `draw_timed_fade_quad` at `0x004039d0`
 - `lcg_rand15` at `0x004040b0`
@@ -218,8 +221,8 @@ These mappings are exported in [planet-scene-helper-map.csv](/C:/works/projects/
 
 Current working interpretation:
 
-- the intro/logo and `s` scenes share the same dual-panel primitive, but feed it different texture pairs
-- the `kaar` and `surf` scenes both depend on a cached sin/cos strip helper, making them stronger candidates for geometry-heavy ribbon, ring, or tube effects
+- the intro/logo and `s` scenes share the same two-texture bipyramid primitive, but feed it different texture pairs
+- the `kaar` and `surf` scenes both depend on a cached tube-shell helper, making them stronger candidates for geometry-heavy ribbon, ring, or tube effects
 - the `fla` scene owns the most obvious per-element state loop and is currently the best particle-field candidate
 - the finale scene reuses the shared quad art and ends with a dedicated time-based fade helper
 
@@ -229,7 +232,7 @@ Pass 03 also provided several stable helpers and state blocks for later source r
 
 - startup polar table builder at `0x00401000`
 - basic quad texture loader at `0x00403400`
-- ring-strip vertex caches around `0x005d7950` and `0x005d7c50`
+- tube-shell vertex caches around `0x005d7950` and `0x005d7c50`
 - overlay jitter state around `0x005d7948`, `0x005d7f50`, and `0x005d7f54`
 
 ## Cutter Pass 04 Findings
@@ -296,23 +299,89 @@ without first rebuilding a tracker-row-exact runtime.
 
 The detailed address map for this pass is exported in [planet-timing-globals.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-timing-globals.csv).
 
+## Cutter Pass 05 Findings
+
+Pass 05 resolved the two most reusable geometry helpers with enough detail to stop treating them as vague visual guesses.
+
+### Corrected helper identities
+
+Two helper names are now materially more precise:
+
+- `0x00403760` -> `draw_dual_texture_bipyramid`
+- `0x00403e40` -> `draw_cached_tube_shell`
+
+The previous “panel pair” and “ring strip” labels are now obsolete.
+
+### `draw_dual_texture_bipyramid`
+
+This helper:
+
+- begins `glBegin(GL_TRIANGLES)`
+- binds one texture for the `+z` half and one for the `-z` half
+- emits `8` triangles, `24` vertices total
+
+Resolved geometry:
+
+- shared base square at `z = 0`
+- base corners at `(+/-60, +/-60, 0)`
+- front apex at `(0, 0, 60)`
+- back apex at `(0, 0, -60)`
+
+So the helper draws a textured square bipyramid or octahedron-like sprite, not two flat panels.
+
+### `draw_cached_tube_shell`
+
+This helper:
+
+- lazily builds two cached rings of `64` vertices each
+- uses `radius = 6`
+- places the rings at `z = -70` and `z = +70`
+- draws `64` `GL_QUADS` between matching vertices
+
+Resolved cache formula:
+
+- `angle = i * 0.1`
+- `x = cos(angle) * 6`
+- `y = sin(angle) * 6`
+- `z = (ring - 0.5) * 140`
+
+Resolved draw order:
+
+- `ring0[i]`
+- `ring0[next]`
+- `ring1[next]`
+- `ring1[i]`
+
+The helper also applies a scrolled texture window derived from its `double phase` argument, using a `3.0` span across the tube length and `1/64` steps around the circumference.
+
+### Geometry-state anchors
+
+Pass 05 also sharpens the cached geometry labels:
+
+- `0x005d7950` -> `tube_ring_vertices_neg_z`
+- `0x005d7c50` -> `tube_ring_vertices_pos_z`
+- `0x005d7f58` -> `g_tube_shell_cache_valid`
+
+The geometry-specific export for this pass is [planet-geometry-helpers.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-geometry-helpers.csv).
+
 ## Current Deliverable Quality
 
-The workspace is now ready for continued interactive analysis with a documented four-pass Cutter workflow.
+The workspace is now ready for continued interactive analysis with a documented five-pass Cutter workflow.
 
 The current map is still not final, but it is already useful enough to:
 
 - avoid restarting from raw addresses
 - separate scene-family logic from reusable helper routines
 - separate music-position scene switching from wall-clock scene timing
-- focus the next pass on geometry helpers and scene-local state
+- describe the shared geometry helpers as concrete primitives
+- focus the next pass on scene-local state and helper pseudocode cleanup
 - keep naming decisions consistent across tools
 
 ## Next Step
 
 Continue the static pass interactively in Cutter:
 
-1. resolve the exact geometry emitted by `draw_dual_texture_panel_pair` and `draw_cached_ring_strip`
-2. determine whether `pattern`, `row`, or `syncInfo` are consumed indirectly through scene-local state blocks
-3. continue naming scene-local state blocks in the `0x005d79xx` and `0x005d7fxx` ranges
-4. begin drafting C-like pseudocode for the most stable scene helpers before tackling full-family reconstruction
+1. determine whether `pattern`, `row`, or `syncInfo` are consumed indirectly through scene-local state blocks
+2. continue naming scene-local state blocks in the `0x005d79xx` and `0x005d7fxx` ranges
+3. normalize helper pseudocode around the corrected bipyramid and tube-shell primitives
+4. begin reconstructing one full scene family against the now-stable helper library

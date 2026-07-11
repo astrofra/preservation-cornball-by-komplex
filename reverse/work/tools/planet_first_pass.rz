@@ -43,7 +43,7 @@ afn render_scene_finale_family
 s 0x00403400
 afn load_basic_quad_textures
 s 0x00403760
-afn draw_dual_texture_panel_pair
+afn draw_dual_texture_bipyramid
 s 0x004039d0
 afn draw_timed_fade_quad
 s 0x00403b40
@@ -53,7 +53,7 @@ afn draw_soft_blended_quad
 s 0x00403d70
 afn draw_centered_textured_quad
 s 0x00403e40
-afn draw_cached_ring_strip
+afn draw_cached_tube_shell
 s 0x004036a0
 afn ensure_texture_loaded
 s 0x004036bb
@@ -77,15 +77,15 @@ f+ texture_slot_table 56
 s 0x005d7948
 f+ g_overlay_jitter_y 4
 s 0x005d7950
-f+ ring_strip_vertices_a 768
+f+ tube_ring_vertices_neg_z 768
 s 0x005d7c50
-f+ ring_strip_vertices_b 768
+f+ tube_ring_vertices_pos_z 768
 s 0x005d7f50
 f+ g_overlay_jitter_x 4
 s 0x005d7f54
 f+ g_overlay_call_counter 4
 s 0x005d7f58
-f+ g_ring_strip_cache_valid 4
+f+ g_tube_shell_cache_valid 4
 s 0x005d1708
 f+ g_midas_module_handle 4
 s 0x005d170c

@@ -1,10 +1,10 @@
 va,proposed_name,callers,parameter_guess,confidence,evidence
 0x00403400,load_basic_quad_textures,render_scene_finale_family,none,medium,Dedicated four-texture loader for v1/v2/txt1/txt2 used only by the finale family.
-0x00403760,draw_dual_texture_panel_pair,render_scene_intro_logo_family;render_scene_s_pair_family;render_scene_finale_family,"int texture_slot_a, int texture_slot_b",medium,"Called with slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive."
+0x00403760,draw_dual_texture_bipyramid,render_scene_intro_logo_family;render_scene_s_pair_family;render_scene_finale_family,"int texture_id_front, int texture_id_back",high,"Emits two four-triangle square pyramids sharing the z=0 base square, with one texture on the +z half and the other on the -z half."
 0x004039d0,draw_timed_fade_quad,render_scene_finale_family,float scene_time,medium,"Wraps a time-derived phase through 0x004040e0, modulates glColor4f, and draws a blended textured quad."
 0x00403b40,draw_jittered_overlay_quad,all scene families,int reseed_mask,medium,Alternates pseudo-randomized X/Y offsets through 0x004040b0 and draws a small blended overlay quad.
 0x00403c90,draw_soft_blended_quad,render_scene_intro_logo_family;render_scene_fla_particle_family,"float half_width, float half_height",medium,"Draws a centered blended quad with slightly inset texture coordinates, likely to avoid texture edge bleed."
 0x00403d70,draw_centered_textured_quad,render_scene_kaar_family,"float half_width, float half_height",medium,Draws a centered textured quad from two float parameters for the kaar family.
-0x00403e40,draw_cached_ring_strip,render_scene_kaar_family;render_scene_surf_family,double phase,medium,"Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv."
+0x00403e40,draw_cached_tube_shell,render_scene_kaar_family;render_scene_surf_family,double phase,high,"Caches two 64-vertex rings of radius 6 at z=-70 and z=+70, then draws 64 GL_QUADS between matching vertices with a phase-scrolled texture window."
 0x004040b0,lcg_rand15,scene families;draw_jittered_overlay_quad,none,high,Local linear-congruential generator returning a masked 15-bit pseudo-random value.
 0x004040e0,fmod_x87_helper,render_scene_intro_logo_family;draw_timed_fade_quad,"double value, double modulus",medium,Compiler-style x87 helper used to wrap a floating-point phase into a smaller range.

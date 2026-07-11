@@ -281,10 +281,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00403760",
-            "proposed_name": "draw_dual_texture_panel_pair",
+            "proposed_name": "draw_dual_texture_bipyramid",
             "subsystem": "scene_support",
-            "confidence": "medium",
-            "evidence": "Called with texture-slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive.",
+            "confidence": "high",
+            "evidence": "Binds two texture IDs and emits eight GL_TRIANGLES that form a square bipyramid centered on the origin with apices at z=+60 and z=-60.",
         },
         {
             "va": "0x004039d0",
@@ -316,10 +316,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00403e40",
-            "proposed_name": "draw_cached_ring_strip",
+            "proposed_name": "draw_cached_tube_shell",
             "subsystem": "scene_support",
-            "confidence": "medium",
-            "evidence": "Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv for the kaar and surf families.",
+            "confidence": "high",
+            "evidence": "Builds two cached 64-vertex circles at z=-70 and z=+70 with radius 6, then renders a GL_QUADS tube shell with scrolled texture coordinates.",
         },
         {
             "va": "0x004036a0",
@@ -556,11 +556,11 @@ def scene_helper_rows() -> list[dict[str, str]]:
         },
         {
             "va": "0x00403760",
-            "proposed_name": "draw_dual_texture_panel_pair",
+            "proposed_name": "draw_dual_texture_bipyramid",
             "callers": "render_scene_intro_logo_family;render_scene_s_pair_family;render_scene_finale_family",
-            "parameter_guess": "int texture_slot_a, int texture_slot_b",
-            "confidence": "medium",
-            "evidence": "Called with slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive.",
+            "parameter_guess": "int texture_id_front, int texture_id_back",
+            "confidence": "high",
+            "evidence": "Emits two four-triangle square pyramids sharing the z=0 base square, with one texture on the +z half and the other on the -z half.",
         },
         {
             "va": "0x004039d0",
@@ -596,11 +596,11 @@ def scene_helper_rows() -> list[dict[str, str]]:
         },
         {
             "va": "0x00403e40",
-            "proposed_name": "draw_cached_ring_strip",
+            "proposed_name": "draw_cached_tube_shell",
             "callers": "render_scene_kaar_family;render_scene_surf_family",
             "parameter_guess": "double phase",
-            "confidence": "medium",
-            "evidence": "Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv.",
+            "confidence": "high",
+            "evidence": "Caches two 64-vertex rings of radius 6 at z=-70 and z=+70, then draws 64 GL_QUADS between matching vertices with a phase-scrolled texture window.",
         },
         {
             "va": "0x004040b0",
@@ -617,6 +617,29 @@ def scene_helper_rows() -> list[dict[str, str]]:
             "parameter_guess": "double value, double modulus",
             "confidence": "medium",
             "evidence": "Compiler-style x87 helper used to wrap a floating-point phase into a smaller range.",
+        },
+    ]
+
+
+def geometry_helper_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "va": "0x00403760",
+            "proposed_name": "draw_dual_texture_bipyramid",
+            "primitive": "GL_TRIANGLES",
+            "vertex_count": "24",
+            "parameter_guess": "int texture_id_front, int texture_id_back",
+            "cache_or_state": "none",
+            "notes": "Draws two four-triangle square pyramids sharing the base square at z=0. Base corners are (+/-60, +/-60, 0); apices are (0, 0, +60) and (0, 0, -60).",
+        },
+        {
+            "va": "0x00403e40",
+            "proposed_name": "draw_cached_tube_shell",
+            "primitive": "GL_QUADS",
+            "vertex_count": "256",
+            "parameter_guess": "double phase",
+            "cache_or_state": "tube_ring_vertices_neg_z;tube_ring_vertices_pos_z;g_tube_shell_cache_valid",
+            "notes": "Lazily builds two 64-vertex circles with radius 6 at z=-70 and z=+70, then emits 64 quads in the order ring0[i], ring0[next], ring1[next], ring1[i].",
         },
     ]
 
@@ -796,6 +819,11 @@ def main() -> None:
         OUT_DIR / "planet-scene-helper-map.csv",
         scene_helper_rows(),
         ["va", "proposed_name", "callers", "parameter_guess", "confidence", "evidence"],
+    )
+    write_csv(
+        OUT_DIR / "planet-geometry-helpers.csv",
+        geometry_helper_rows(),
+        ["va", "proposed_name", "primitive", "vertex_count", "parameter_guess", "cache_or_state", "notes"],
     )
     write_csv(
         OUT_DIR / "planet-timing-globals.csv",
