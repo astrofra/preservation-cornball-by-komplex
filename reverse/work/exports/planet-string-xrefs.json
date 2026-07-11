@@ -1,0 +1,121 @@
+[
+  {
+    "label": "Planet Cornball",
+    "string_va": "0x0040e058",
+    "xrefs": [
+      "0x0040151c",
+      "0x0040155b",
+      "0x0040156c",
+      "0x004015a0"
+    ]
+  },
+  {
+    "label": "aab.xm",
+    "string_va": "0x0040e12c",
+    "xrefs": [
+      "0x004015de"
+    ]
+  },
+  {
+    "label": "logotaus.tga",
+    "string_va": "0x0040e190",
+    "xrefs": [
+      "0x00401c6b",
+      "0x00402ba4"
+    ]
+  },
+  {
+    "label": "logo.tga",
+    "string_va": "0x0040e1a0",
+    "xrefs": [
+      "0x00401c5c"
+    ]
+  },
+  {
+    "label": "txt2.tga",
+    "string_va": "0x0040e1ac",
+    "xrefs": [
+      "0x00401c4d",
+      "0x0040216e",
+      "0x004025fe",
+      "0x0040344d"
+    ]
+  },
+  {
+    "label": "txt1.tga",
+    "string_va": "0x0040e1b8",
+    "xrefs": [
+      "0x00401c3e",
+      "0x004025ef",
+      "0x00402b95",
+      "0x0040315e",
+      "0x0040343e"
+    ]
+  },
+  {
+    "label": "v2.tga",
+    "string_va": "0x0040e1c4",
+    "xrefs": [
+      "0x00401c2f",
+      "0x0040342f"
+    ]
+  },
+  {
+    "label": "v1.tga",
+    "string_va": "0x0040e1cc",
+    "xrefs": [
+      "0x00401c16",
+      "0x00403416"
+    ]
+  },
+  {
+    "label": "s2.tga",
+    "string_va": "0x0040e1d4",
+    "xrefs": [
+      "0x0040215f"
+    ]
+  },
+  {
+    "label": "s1.tga",
+    "string_va": "0x0040e1dc",
+    "xrefs": [
+      "0x00402146"
+    ]
+  },
+  {
+    "label": "kaar128.tga",
+    "string_va": "0x0040e1e4",
+    "xrefs": [
+      "0x004025d6"
+    ]
+  },
+  {
+    "label": "fla.tga",
+    "string_va": "0x0040e1f0",
+    "xrefs": [
+      "0x00402b7c",
+      "0x0040314f"
+    ]
+  },
+  {
+    "label": "surf128.tga",
+    "string_va": "0x0040e1f8",
+    "xrefs": [
+      "0x00403136"
+    ]
+  },
+  {
+    "label": "SetPixelFormat failed",
+    "string_va": "0x0040e144",
+    "xrefs": [
+      "0x0040190b"
+    ]
+  },
+  {
+    "label": "ChoosePixelFormat failed",
+    "string_va": "0x0040e16c",
+    "xrefs": [
+      "0x004018bd"
+    ]
+  }
+]

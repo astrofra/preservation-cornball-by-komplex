@@ -1,0 +1,11 @@
+{
+  "path": "reverse/baseline/cornball/PLANET.EXE",
+  "sha256": "c6bf4cf57251a16fa2a5664e9809d16558b12365c18bda53777d03ac00d3c86a",
+  "machine": "0x014c",
+  "timestamp": 892023390,
+  "image_base": "0x00400000",
+  "entry_point_va": "0x004045c0",
+  "major_linker_version": 5,
+  "minor_linker_version": 2,
+  "size_of_image": "0x001db000"
+}

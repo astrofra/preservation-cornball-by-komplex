@@ -1,0 +1,18 @@
+va,proposed_name,subsystem,confidence,evidence
+0x00401510,create_main_window,win32_init,high,"Uses Planet Cornball string, RegisterClassA, CreateWindowExA, ShowWindow."
+0x00401880,setup_pixel_format,opengl_init,high,"Calls ChoosePixelFormat and SetPixelFormat, references setup error strings."
+0x00401930,render_scene_or_frame,render_loop,medium,Starts with GL state setup and x87 transforms; likely a frame render path.
+0x00401c10,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
+0x00402140,load_scene_s_textures,assets_textures,high,Loads s1/s2/txt2 textures and uploads them via glTexImage2D.
+0x004025d0,load_kaar_textures,assets_textures,high,Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.
+0x00402b70,load_fla_texture_group,assets_textures,medium,References fla.tga and intro texture IDs; likely a grouped texture setup routine.
+0x00403130,load_surf_texture_group,assets_textures,high,Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.
+0x004036a0,ensure_texture_loaded,assets_textures,high,Caches texture data by index and delegates to the raw TGA loader.
+0x004036bb,load_tga_256x256_rgba,assets_io,high,"Reads 18-byte TGA header, allocates 0x40000 bytes, swaps BGR(A) to RGB(A)."
+0x00404014,midas_play_module,audio_wrappers,high,Import thunk to MIDASplayModule.
+0x0040401a,midas_load_module,audio_wrappers,high,Import thunk to MIDASloadModule.
+0x00404020,midas_start_background_play,audio_wrappers,high,Import thunk to MIDASstartBackgroundPlay.
+0x00404026,midas_init,audio_wrappers,high,Import thunk to MIDASinit.
+0x0040402c,midas_startup,audio_wrappers,high,Import thunk to MIDASstartup.
+0x004045c0,crt_startup_main,startup,high,MSVC CRT startup path leading into program entry.
+0x004015dd,load_music_module,audio_init,high,References aab.xm and MIDAS load/play wrappers in window init path.

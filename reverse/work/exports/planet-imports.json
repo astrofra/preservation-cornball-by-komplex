@@ -1,0 +1,572 @@
+[
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetStringTypeA",
+    "iat_va": "0x005da284"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "LCMapStringW",
+    "iat_va": "0x005da288"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetStringTypeW",
+    "iat_va": "0x005da28c"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "LCMapStringA",
+    "iat_va": "0x005da290"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "CreateFileA",
+    "iat_va": "0x005da294"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "FlushFileBuffers",
+    "iat_va": "0x005da298"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "SetStdHandle",
+    "iat_va": "0x005da29c"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "RaiseException",
+    "iat_va": "0x005da2a0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "RtlUnwind",
+    "iat_va": "0x005da2a4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "LoadLibraryA",
+    "iat_va": "0x005da2a8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "VirtualFree",
+    "iat_va": "0x005da2ac"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "HeapCreate",
+    "iat_va": "0x005da2b0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "HeapDestroy",
+    "iat_va": "0x005da2b4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetFileType",
+    "iat_va": "0x005da2b8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetStdHandle",
+    "iat_va": "0x005da2bc"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "SetHandleCount",
+    "iat_va": "0x005da2c0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetOEMCP",
+    "iat_va": "0x005da2c4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "SetEndOfFile",
+    "iat_va": "0x005da2c8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetTickCount",
+    "iat_va": "0x005da2cc"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "VirtualAlloc",
+    "iat_va": "0x005da2d0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "WriteFile",
+    "iat_va": "0x005da2d4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "SetFilePointer",
+    "iat_va": "0x005da2d8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "ReadFile",
+    "iat_va": "0x005da2dc"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "CloseHandle",
+    "iat_va": "0x005da2e0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "TerminateProcess",
+    "iat_va": "0x005da2e4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "HeapFree",
+    "iat_va": "0x005da2e8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetProcAddress",
+    "iat_va": "0x005da2ec"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetLastError",
+    "iat_va": "0x005da2f0"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetVersion",
+    "iat_va": "0x005da2f4"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetCommandLineA",
+    "iat_va": "0x005da2f8"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "ExitProcess",
+    "iat_va": "0x005da2fc"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetModuleHandleA",
+    "iat_va": "0x005da300"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "HeapAlloc",
+    "iat_va": "0x005da304"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetStartupInfoA",
+    "iat_va": "0x005da308"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetModuleFileNameA",
+    "iat_va": "0x005da30c"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "FreeEnvironmentStringsA",
+    "iat_va": "0x005da310"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "UnhandledExceptionFilter",
+    "iat_va": "0x005da314"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetCurrentProcess",
+    "iat_va": "0x005da318"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "MultiByteToWideChar",
+    "iat_va": "0x005da31c"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "FreeEnvironmentStringsW",
+    "iat_va": "0x005da320"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetEnvironmentStrings",
+    "iat_va": "0x005da324"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetEnvironmentStringsW",
+    "iat_va": "0x005da328"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "WideCharToMultiByte",
+    "iat_va": "0x005da32c"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetCPInfo",
+    "iat_va": "0x005da330"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "Sleep",
+    "iat_va": "0x005da334"
+  },
+  {
+    "dll": "KERNEL32.dll",
+    "name": "GetACP",
+    "iat_va": "0x005da338"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "PostQuitMessage",
+    "iat_va": "0x005da3d0"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "GetDC",
+    "iat_va": "0x005da3d4"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "TranslateMessage",
+    "iat_va": "0x005da3d8"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "GetMessageA",
+    "iat_va": "0x005da3dc"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "DispatchMessageA",
+    "iat_va": "0x005da3e0"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "UpdateWindow",
+    "iat_va": "0x005da3e4"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "ShowWindow",
+    "iat_va": "0x005da3e8"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "PeekMessageA",
+    "iat_va": "0x005da3ec"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "RegisterClassA",
+    "iat_va": "0x005da3f0"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "LoadCursorA",
+    "iat_va": "0x005da3f4"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "CreateWindowExA",
+    "iat_va": "0x005da3f8"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "MessageBoxA",
+    "iat_va": "0x005da3fc"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "GetClientRect",
+    "iat_va": "0x005da400"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "ReleaseDC",
+    "iat_va": "0x005da404"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "DestroyWindow",
+    "iat_va": "0x005da408"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "DefWindowProcA",
+    "iat_va": "0x005da40c"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "BeginPaint",
+    "iat_va": "0x005da410"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "EndPaint",
+    "iat_va": "0x005da414"
+  },
+  {
+    "dll": "USER32.dll",
+    "name": "LoadIconA",
+    "iat_va": "0x005da418"
+  },
+  {
+    "dll": "GDI32.dll",
+    "name": "ChoosePixelFormat",
+    "iat_va": "0x005da26c"
+  },
+  {
+    "dll": "GDI32.dll",
+    "name": "SetPixelFormat",
+    "iat_va": "0x005da270"
+  },
+  {
+    "dll": "GDI32.dll",
+    "name": "SwapBuffers",
+    "iat_va": "0x005da274"
+  },
+  {
+    "dll": "GLU32.dll",
+    "name": "gluPerspective",
+    "iat_va": "0x005da27c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glTexImage2D",
+    "iat_va": "0x005da340"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glHint",
+    "iat_va": "0x005da344"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glTexParameterf",
+    "iat_va": "0x005da348"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glLoadIdentity",
+    "iat_va": "0x005da34c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glFogi",
+    "iat_va": "0x005da350"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glTexEnvf",
+    "iat_va": "0x005da354"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glFogf",
+    "iat_va": "0x005da358"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glFogfv",
+    "iat_va": "0x005da35c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glClearColor",
+    "iat_va": "0x005da360"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "wglMakeCurrent",
+    "iat_va": "0x005da364"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "wglCreateContext",
+    "iat_va": "0x005da368"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "wglDeleteContext",
+    "iat_va": "0x005da36c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glViewport",
+    "iat_va": "0x005da370"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glBlendFunc",
+    "iat_va": "0x005da374"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glVertex3f",
+    "iat_va": "0x005da378"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glTexCoord2f",
+    "iat_va": "0x005da37c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glVertex3fv",
+    "iat_va": "0x005da380"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glMatrixMode",
+    "iat_va": "0x005da384"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glDepthFunc",
+    "iat_va": "0x005da388"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glEnable",
+    "iat_va": "0x005da38c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glRotatef",
+    "iat_va": "0x005da390"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glPushMatrix",
+    "iat_va": "0x005da394"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glTranslatef",
+    "iat_va": "0x005da398"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glDisable",
+    "iat_va": "0x005da39c"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glColor3f",
+    "iat_va": "0x005da3a0"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glBindTexture",
+    "iat_va": "0x005da3a4"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glCullFace",
+    "iat_va": "0x005da3a8"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glBegin",
+    "iat_va": "0x005da3ac"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glColor4f",
+    "iat_va": "0x005da3b0"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glEnd",
+    "iat_va": "0x005da3b4"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glPixelStorei",
+    "iat_va": "0x005da3b8"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glFinish",
+    "iat_va": "0x005da3bc"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glShadeModel",
+    "iat_va": "0x005da3c0"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glClear",
+    "iat_va": "0x005da3c4"
+  },
+  {
+    "dll": "OPENGL32.dll",
+    "name": "glClearDepth",
+    "iat_va": "0x005da3c8"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASgetPlayStatus@4",
+    "iat_va": "0x005da420"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASclose@0",
+    "iat_va": "0x005da424"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASstopModule@4",
+    "iat_va": "0x005da428"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASstopBackgroundPlay@0",
+    "iat_va": "0x005da42c"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASfreeModule@4",
+    "iat_va": "0x005da430"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASstartBackgroundPlay@4",
+    "iat_va": "0x005da434"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASplayModule@8",
+    "iat_va": "0x005da438"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASloadModule@4",
+    "iat_va": "0x005da43c"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASinit@0",
+    "iat_va": "0x005da440"
+  },
+  {
+    "dll": "midas06.dll",
+    "name": "_MIDASstartup@0",
+    "iat_va": "0x005da444"
+  }
+]

@@ -1,0 +1,403 @@
+!This program cannot be run in DOS mode.
+^2+5
+.text
+`.rdata
+@.data
+.idata
+VPQj
+@P@j
+SUVWj
+ Ahc
+D$$RP
+_^][
+SUVW
+t$0W3
+D$(X
+D$0X
+WVWWh
+t%jd
+ItsIt5
+L$\PQ
+t$\V
+T$dQRP
+D$hP
+PPPP
+WVUSj
+PPPQ
+L>hb
+?UUQ
+D$ PPP
+[]^_
+SVWj
+QSUV
+p}?h
+_^][Y
+D$(PQ
+D$ _^][Y
+j@PQ
+80t`
+gfff
+0000
+T$ RSUW
+u^VW
+UVW3
+|$$3
+T$0j
+D$(<
+/;t$$u
+T$ j
++t$$
+SUVP
+=tES
+PRVW
+8"uV
+8"uV@
+8"u%
+\$$3
+D$ _^]
+WSUVj
+_^]3
+SUVWP
+L$(u
+0B=p
+|$(3
+D$  
+    
+T$0h
+D$ j
+HSUVWh
+SVWUj
+h8q@
+]_^[
+h@q@
+t.;t$$t(
+VC20XC00U
+SVWU
+tEVU
+t3x<
+SUVW3
+IQRV
+T$ P
+t!EUS
+L$ u
+1_^][
+@NKu
+D$.%
+D$ %
+L$dSV
+t$h3
+T$|W
+D$ph
+1_^[
+t.Ht
+Hu1Sj
+l$ u
+L$(+
+T$$j
++D$ _^][
+QSUR
+D$(j
+L$ UQSRP
+D$0j
+u#UV
+QVWRP
+VBWRU
+WSVQj
+WSUR
+D$(PWSUQ
+VPWSUQ
+D$4j
+VRh 
+T$(P
+D$8QVRh 
+D$,;
+L$ R
+T$ Q
+L$ RQP
+|$,;
+U@RPS
+tKVj
+VWUQj
+T$$RP
+D$ WP
+t$,W
+WuBh0
+PQRS
+tzVS
+GIt%
+t/Ku
+t$$3
+D$(u
+L$lS
+D$HUV
+D$|j
+L$0u
+\$|t
+L$0;
+|$ |
+L$,u
+L$,3
+t$|j
+|$ t
+D$k<
+D$TRVP
+D$(}
+|$tf
+T$DQPR
+\$4f
+\$"j
+L$ PQF
+D$Df
+t$*f
+D$ P
+L$ Q
+D$8R
+T$ QR
+KK<5|1;
+D$HCf
+D$H*
+t7It
+wB;5
+T$(SUVf
+|$<3
+l$(f
+*_^][
+D$$u
+l$0u)
+T$(R
+D$(P
+D$ 3
+f9|$(w
+D$(%
+9D$*u,9D$.
+L$*u
+L$.u
+|$2C
+D$*f
+D$,f
+333333
+#?333333
+MbP?
+B@333333
+4@3333330
+?333333
+zt?{
+@333333
+?ffffff
+@@333333
+?IsProcessorFeaturePresent
+KERNEL32
+e+000
+@runtime error 
+TLOSS error
+SING error
+DOMAIN error
+R6028
+- unable to initialize heap
+R6027
+- not enough space for lowio initialization
+R6026
+- not enough space for stdio initialization
+R6025
+- pure virtual function call
+R6024
+- not enough space for _onexit/atexit table
+R6019
+- unable to open console device
+R6018
+- unexpected heap error
+R6017
+- unexpected multithread lock error
+R6016
+- not enough space for thread data
+abnormal program termination
+R6009
+- not enough space for environment
+R6008
+- not enough space for arguments
+R6002
+- floating point not loaded
+Microsoft Visual C++ Runtime Library
+Runtime Error!
+Program: 
+<program name unknown>
+GetLastActivePopup
+GetActiveWindow
+MessageBoxA
+user32.dll
+1#QNAN
+1#INF
+1#IND
+1#SNAN
+frexp
+fmod
+_hypot
+_cabs
+ldexp
+modf
+fabs
+floor
+ceil
+sqrt
+atan2
+atan
+acos
+asin
+tanh
+cosh
+sinh
+log10
+Planet Cornball
+programming by jarno.heikkinen@yomimedia.fi
+music by loke@merikoski.edu.ouka.fi
+some graphics by s345468@student.uq.edu.au
+more graphics by jusaka@jyu.fi
+aab.xm
+planet cornball
+SetPixelFormat failed
+Needs palette
+ChoosePixelFormat failed
+Error
+logotaus.tga
+logo.tga
+txt2.tga
+txt1.tga
+v2.tga
+v1.tga
+s2.tga
+s1.tga
+kaar128.tga
+fla.tga
+surf128.tga
+?pow
+kU'9
+HMXB
+?Zd;
+?/L[
+S;uD
+z?aUY
+D?$?
+U>c{
+zc%C1
+.:3q
+-64OS
+NKeb
+Sleep
+GetTickCount
+KERNEL32.dll
+DispatchMessageA
+TranslateMessage
+GetMessageA
+PeekMessageA
+UpdateWindow
+ShowWindow
+CreateWindowExA
+RegisterClassA
+LoadCursorA
+LoadIconA
+DestroyWindow
+EndPaint
+BeginPaint
+DefWindowProcA
+GetDC
+PostQuitMessage
+ReleaseDC
+GetClientRect
+USER32.dll
+SwapBuffers
+SetPixelFormat
+ChoosePixelFormat
+GDI32.dll
+gluPerspective
+GLU32.dll
+glFinish
+glColor4f
+glEnd
+glBindTexture
+glBegin
+glCullFace
+glTranslatef
+glColor3f
+glDisable
+glEnable
+glPushMatrix
+glRotatef
+glLoadIdentity
+glMatrixMode
+glClear
+glVertex3fv
+glTexCoord2f
+glVertex3f
+glBlendFunc
+glViewport
+glFogfv
+glFogf
+glFogi
+glHint
+glTexImage2D
+glTexEnvf
+glTexParameterf
+glPixelStorei
+glShadeModel
+glDepthFunc
+glClearDepth
+glClearColor
+wglMakeCurrent
+wglCreateContext
+wglDeleteContext
+OPENGL32.dll
+_MIDASgetPlayStatus@4
+_MIDASclose@0
+_MIDASstopBackgroundPlay@0
+_MIDASfreeModule@4
+_MIDASstopModule@4
+_MIDASplayModule@8
+_MIDASloadModule@4
+_MIDASstartBackgroundPlay@4
+_MIDASinit@0
+_MIDASstartup@0
+midas06.dll
+GetModuleHandleA
+GetStartupInfoA
+GetCommandLineA
+GetVersion
+ExitProcess
+GetProcAddress
+HeapFree
+GetLastError
+CloseHandle
+ReadFile
+TerminateProcess
+GetCurrentProcess
+SetFilePointer
+HeapAlloc
+UnhandledExceptionFilter
+GetModuleFileNameA
+FreeEnvironmentStringsA
+MultiByteToWideChar
+FreeEnvironmentStringsW
+GetEnvironmentStrings
+GetEnvironmentStringsW
+WideCharToMultiByte
+GetCPInfo
+GetACP
+GetOEMCP
+SetHandleCount
+GetStdHandle
+GetFileType
+HeapDestroy
+HeapCreate
+VirtualFree
+RtlUnwind
+WriteFile
+VirtualAlloc
+SetStdHandle
+FlushFileBuffers
+CreateFileA
+LCMapStringA
+LCMapStringW
+GetStringTypeA
+GetStringTypeW
+LoadLibraryA
+RaiseException
+SetEndOfFile
