@@ -32,6 +32,8 @@ Set up a repeatable static-analysis workspace, install at least one open-source 
    - [reverse/work/notes/cutter-pass-02.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-02.md)
 11. Saved a reusable Rizin project database:
    - [reverse/work/projects/cutter/planet-pass-01.rzdb](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/projects/cutter/planet-pass-01.rzdb)
+12. Ran the third static pass on the scene renderer families and shared helper routines:
+   - [reverse/work/notes/cutter-pass-03.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-03.md)
 
 ## Cutter Installation
 
@@ -61,6 +63,8 @@ Created under `reverse/work/exports/`:
 - [planet-function-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-function-map.csv)
 - [planet-texture-slots.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-texture-slots.csv)
 - [planet-scene-dispatch.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-dispatch.csv)
+- [planet-scene-family-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-family-map.csv)
+- [planet-scene-helper-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-helper-map.csv)
 - [planet-wndproc-messages.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-wndproc-messages.csv)
 
 ## Cutter Pass 01 Findings
@@ -119,12 +123,12 @@ Recovered handled messages:
 
 The jump table currently resolves to these renderer families:
 
-- scenes `0` and `7` -> `render_scene_case_0_7` at `0x00401930`
-- scenes `1` and `8` -> `render_scene_case_1_8` at `0x00402330`
-- scenes `2` and `4` -> `render_scene_case_2_4` at `0x00401fc0`
-- scenes `3` and `6` -> `render_scene_case_3_6` at `0x00402d70`
-- scene `5` -> `render_scene_case_5` at `0x004027c0`
-- scene `9` -> `render_scene_case_9` at `0x00403320`
+- scenes `0` and `7` -> `render_scene_intro_logo_family` at `0x00401930`
+- scenes `1` and `8` -> `render_scene_kaar_family` at `0x00402330`
+- scenes `2` and `4` -> `render_scene_s_pair_family` at `0x00401fc0`
+- scenes `3` and `6` -> `render_scene_surf_family` at `0x00402d70`
+- scene `5` -> `render_scene_fla_particle_family` at `0x004027c0`
+- scene `9` -> `render_scene_finale_family` at `0x00403320`
 
 Threshold values exported in [planet-scene-dispatch.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-dispatch.csv):
 
@@ -175,21 +179,72 @@ Most common x87 instructions in the top group:
 
 This is consistent with late-1990s procedural 3D demo code and reinforces the expectation that scene code will need manual cleanup even when decompiled.
 
+## Cutter Pass 03 Findings
+
+Pass 03 shifted from bootstrap analysis to the scene renderer itself.
+
+### Refined scene families
+
+The six dispatch targets can now be treated as effect families instead of anonymous case buckets:
+
+- scenes `0` and `7` -> `render_scene_intro_logo_family`
+- scenes `1` and `8` -> `render_scene_kaar_family`
+- scenes `2` and `4` -> `render_scene_s_pair_family`
+- scenes `3` and `6` -> `render_scene_surf_family`
+- scene `5` -> `render_scene_fla_particle_family`
+- scene `9` -> `render_scene_finale_family`
+
+These mappings are exported in [planet-scene-family-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-family-map.csv).
+
+### Shared scene helpers
+
+The scene families reuse a small support library:
+
+- `draw_dual_texture_panel_pair` at `0x00403760`
+- `draw_soft_blended_quad` at `0x00403c90`
+- `draw_centered_textured_quad` at `0x00403d70`
+- `draw_cached_ring_strip` at `0x00403e40`
+- `draw_jittered_overlay_quad` at `0x00403b40`
+- `draw_timed_fade_quad` at `0x004039d0`
+- `lcg_rand15` at `0x004040b0`
+- `fmod_x87_helper` at `0x004040e0`
+
+These mappings are exported in [planet-scene-helper-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-helper-map.csv).
+
+### Scene-side interpretation
+
+Current working interpretation:
+
+- the intro/logo and `s` scenes share the same dual-panel primitive, but feed it different texture pairs
+- the `kaar` and `surf` scenes both depend on a cached sin/cos strip helper, making them stronger candidates for geometry-heavy ribbon, ring, or tube effects
+- the `fla` scene owns the most obvious per-element state loop and is currently the best particle-field candidate
+- the finale scene reuses the shared quad art and ends with a dedicated time-based fade helper
+
+### New scene-side anchors
+
+Pass 03 also provided several stable helpers and state blocks for later source reconstruction:
+
+- startup polar table builder at `0x00401000`
+- basic quad texture loader at `0x00403400`
+- ring-strip vertex caches around `0x005d7950` and `0x005d7c50`
+- overlay jitter state around `0x005d7948`, `0x005d7f50`, and `0x005d7f54`
+
 ## Current Deliverable Quality
 
-The workspace is now ready for continued interactive analysis with a documented first Cutter pass.
+The workspace is now ready for continued interactive analysis with a documented three-pass Cutter workflow.
 
-The current map is not final, but it is already useful enough to:
+The current map is still not final, but it is already useful enough to:
 
 - avoid restarting from raw addresses
-- focus the next pass on scene renderer internals and timing globals
+- separate scene-family logic from reusable helper routines
+- focus the next pass on timing globals and scene-local state
 - keep naming decisions consistent across tools
 
 ## Next Step
 
 Continue the static pass interactively in Cutter:
 
-1. refine the six scene renderer families into concrete effect routines
-2. document the timing globals around `0x005d1710` through `0x005d1738`
-3. determine whether the helper at `0x00401000` is geometry generation, a lookup-table builder, or both
-4. continue naming input/state globals now that `g_mouse_x` and `g_mouse_y` are anchored
+1. document the timing globals around `0x005d1710` through `0x005d1738`
+2. resolve the exact geometry emitted by `draw_dual_texture_panel_pair` and `draw_cached_ring_strip`
+3. continue naming scene-local state blocks in the `0x005d79xx` and `0x005d7fxx` ranges
+4. begin drafting C-like pseudocode for the most stable scene helpers before tackling full-family reconstruction

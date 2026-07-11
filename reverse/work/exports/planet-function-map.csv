@@ -1,4 +1,5 @@
 va,proposed_name,subsystem,confidence,evidence
+0x00401000,build_startup_polar_table,scene_support,medium,Builds four groups of eight sin/cos-derived 3D points into the table at 0x005510ec..0x0055126c during GL startup.
 0x00401090,configure_viewport_and_projection,opengl_view,high,"Calls glViewport, switches to GL_PROJECTION, loads identity, and calls gluPerspective with width/height-derived aspect ratio."
 0x004010f0,initialize_gl_state_and_resources,opengl_init,medium,"Sets core GL state, seeds five texture IDs and uploads 256x256 RGBA blocks, configures fog/culling, then calls the viewport/projection helper."
 0x004012e0,dispatch_scene_by_music_position,render_dispatch,high,Selects scene by threshold table at 0x40e068 and dispatches through the switch table at 0x4013fc.
@@ -6,17 +7,24 @@ va,proposed_name,subsystem,confidence,evidence
 0x00401510,main,startup,high,"Creates the window, initializes MIDAS, shows the window, primes GL, then calls the main loop."
 0x00401680,main_wndproc,win32_init,high,"Window procedure handling WM_CREATE, WM_DESTROY, WM_SIZE, WM_PAINT, WM_CLOSE, WM_KEYDOWN, and WM_MOUSEMOVE."
 0x00401860,setup_pixel_format,opengl_init,high,"Calls ChoosePixelFormat and SetPixelFormat, references setup error strings."
-0x00401930,render_scene_case_0_7,scene_render,medium,Dispatched by cases 0 and 7 from the main scene switch.
+0x00401930,render_scene_intro_logo_family,scene_render,medium,"Loads the intro/logo texture group and reuses the dual-panel, soft-quad, and timed-fade helpers."
 0x00401c00,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
-0x00401fc0,render_scene_case_2_4,scene_render,medium,Dispatched by cases 2 and 4 from the main scene switch.
+0x00401fc0,render_scene_s_pair_family,scene_render,medium,Loads s1/s2/txt2 and reuses the same dual-panel helper as the intro family.
 0x00402130,load_scene_s_textures,assets_textures,high,Loads s1/s2/txt2 textures and uploads them via glTexImage2D.
-0x00402330,render_scene_case_1_8,scene_render,medium,Dispatched by cases 1 and 8 from the main scene switch.
+0x00402330,render_scene_kaar_family,scene_render,medium,Loads kaar128/txt1/txt2 and calls the cached strip helper at 0x00403e40.
 0x004025c0,load_kaar_textures,assets_textures,high,Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.
-0x004027c0,render_scene_case_5,scene_render,low,Dedicated scene renderer dispatched only by case 5.
+0x004027c0,render_scene_fla_particle_family,scene_render,medium,"Loops over per-element state buffers, reseeds values through the local PRNG helper, and uses fla/logotaus/txt1 textures."
 0x00402b40,load_fla_texture_group,assets_textures,high,"Zeros effect buffers, loads fla/txt1/logotaus textures, and uploads them."
-0x00402d70,render_scene_case_3_6,scene_render,low,Shared scene renderer for cases 3 and 6.
+0x00402d70,render_scene_surf_family,scene_render,medium,"Loads surf128/fla/txt1, uses repeated quad loops, and shares the cached strip helper with the kaar family."
 0x00403120,load_surf_texture_group,assets_textures,high,Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.
-0x00403320,render_scene_case_9,scene_render,medium,Final scene renderer dispatched only by case 9.
+0x00403320,render_scene_finale_family,scene_render,medium,"Loads the shared quad textures, reuses the intro dual-panel helper, and ends in a dedicated timed fade helper."
+0x00403400,load_basic_quad_textures,assets_textures,medium,Loads and uploads v1/v2/txt1/txt2 through a dedicated four-texture path used by the finale family.
+0x00403760,draw_dual_texture_panel_pair,scene_support,medium,"Called with texture-slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive."
+0x004039d0,draw_timed_fade_quad,scene_support,medium,"Uses a time-derived parameter, wraps it through 0x004040e0, modulates glColor4f, and draws a blended textured quad."
+0x00403b40,draw_jittered_overlay_quad,scene_support,medium,Alternates pseudo-randomized X/Y offsets through 0x004040b0 and draws a small blended overlay quad reused by every scene family.
+0x00403c90,draw_soft_blended_quad,scene_support,medium,"Draws a centered blended quad with slightly inset texture coordinates, likely as a soft overlay or sprite helper."
+0x00403d70,draw_centered_textured_quad,scene_support,medium,Draws a centered textured quad from two float parameters and is used by the kaar family.
+0x00403e40,draw_cached_ring_strip,scene_support,medium,"Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv for the kaar and surf families."
 0x004036a0,ensure_texture_loaded,assets_textures,high,Caches texture data by index and delegates to the raw TGA loader.
 0x004036bb,load_tga_256x256_rgba,assets_io,high,"Reads 18-byte TGA header, allocates 0x40000 bytes, swaps BGR(A) to RGB(A)."
 0x00404014,midas_play_module,audio_wrappers,high,Import thunk to MIDASplayModule.
@@ -24,5 +32,7 @@ va,proposed_name,subsystem,confidence,evidence
 0x00404020,midas_start_background_play,audio_wrappers,high,Import thunk to MIDASstartBackgroundPlay.
 0x00404026,midas_init,audio_wrappers,high,Import thunk to MIDASinit.
 0x0040402c,midas_startup,audio_wrappers,high,Import thunk to MIDASstartup.
+0x004040b0,lcg_rand15,scene_support,high,Implements a local linear-congruential generator and returns a masked 15-bit pseudo-random value.
+0x004040e0,fmod_x87_helper,math_runtime,medium,Compiler-style x87 helper used by scene code to wrap a floating-point phase value into a smaller range.
 0x004015dd,load_music_module,audio_init,high,References aab.xm and MIDAS load/play wrappers in window init path.
 0x004045c0,crt_startup_main,startup,high,MSVC CRT startup path leading into the recovered main function.

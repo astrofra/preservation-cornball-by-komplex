@@ -140,6 +140,13 @@ def find_string_xrefs(pe: pefile.PE, data: bytes, label: bytes) -> dict[str, obj
 def candidate_function_map() -> list[dict[str, str]]:
     return [
         {
+            "va": "0x00401000",
+            "proposed_name": "build_startup_polar_table",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Builds four groups of eight sin/cos-derived 3D points into the table at 0x005510ec..0x0055126c during GL startup.",
+        },
+        {
             "va": "0x00401090",
             "proposed_name": "configure_viewport_and_projection",
             "subsystem": "opengl_view",
@@ -190,10 +197,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00401930",
-            "proposed_name": "render_scene_case_0_7",
+            "proposed_name": "render_scene_intro_logo_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Dispatched by cases 0 and 7 from the main scene switch.",
+            "evidence": "Loads the intro/logo texture group and reuses the dual-panel, soft-quad, and timed-fade helpers.",
         },
         {
             "va": "0x00401c00",
@@ -204,10 +211,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00401fc0",
-            "proposed_name": "render_scene_case_2_4",
+            "proposed_name": "render_scene_s_pair_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Dispatched by cases 2 and 4 from the main scene switch.",
+            "evidence": "Loads s1/s2/txt2 and reuses the same dual-panel helper as the intro family.",
         },
         {
             "va": "0x00402130",
@@ -218,10 +225,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00402330",
-            "proposed_name": "render_scene_case_1_8",
+            "proposed_name": "render_scene_kaar_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Dispatched by cases 1 and 8 from the main scene switch.",
+            "evidence": "Loads kaar128/txt1/txt2 and calls the cached strip helper at 0x00403e40.",
         },
         {
             "va": "0x004025c0",
@@ -232,10 +239,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x004027c0",
-            "proposed_name": "render_scene_case_5",
+            "proposed_name": "render_scene_fla_particle_family",
             "subsystem": "scene_render",
-            "confidence": "low",
-            "evidence": "Dedicated scene renderer dispatched only by case 5.",
+            "confidence": "medium",
+            "evidence": "Loops over per-element state buffers, reseeds values through the local PRNG helper, and uses fla/logotaus/txt1 textures.",
         },
         {
             "va": "0x00402b40",
@@ -246,10 +253,10 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00402d70",
-            "proposed_name": "render_scene_case_3_6",
+            "proposed_name": "render_scene_surf_family",
             "subsystem": "scene_render",
-            "confidence": "low",
-            "evidence": "Shared scene renderer for cases 3 and 6.",
+            "confidence": "medium",
+            "evidence": "Loads surf128/fla/txt1, uses repeated quad loops, and shares the cached strip helper with the kaar family.",
         },
         {
             "va": "0x00403120",
@@ -260,10 +267,59 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00403320",
-            "proposed_name": "render_scene_case_9",
+            "proposed_name": "render_scene_finale_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Final scene renderer dispatched only by case 9.",
+            "evidence": "Loads the shared quad textures, reuses the intro dual-panel helper, and ends in a dedicated timed fade helper.",
+        },
+        {
+            "va": "0x00403400",
+            "proposed_name": "load_basic_quad_textures",
+            "subsystem": "assets_textures",
+            "confidence": "medium",
+            "evidence": "Loads and uploads v1/v2/txt1/txt2 through a dedicated four-texture path used by the finale family.",
+        },
+        {
+            "va": "0x00403760",
+            "proposed_name": "draw_dual_texture_panel_pair",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Called with texture-slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive.",
+        },
+        {
+            "va": "0x004039d0",
+            "proposed_name": "draw_timed_fade_quad",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Uses a time-derived parameter, wraps it through 0x004040e0, modulates glColor4f, and draws a blended textured quad.",
+        },
+        {
+            "va": "0x00403b40",
+            "proposed_name": "draw_jittered_overlay_quad",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Alternates pseudo-randomized X/Y offsets through 0x004040b0 and draws a small blended overlay quad reused by every scene family.",
+        },
+        {
+            "va": "0x00403c90",
+            "proposed_name": "draw_soft_blended_quad",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Draws a centered blended quad with slightly inset texture coordinates, likely as a soft overlay or sprite helper.",
+        },
+        {
+            "va": "0x00403d70",
+            "proposed_name": "draw_centered_textured_quad",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Draws a centered textured quad from two float parameters and is used by the kaar family.",
+        },
+        {
+            "va": "0x00403e40",
+            "proposed_name": "draw_cached_ring_strip",
+            "subsystem": "scene_support",
+            "confidence": "medium",
+            "evidence": "Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv for the kaar and surf families.",
         },
         {
             "va": "0x004036a0",
@@ -315,6 +371,20 @@ def candidate_function_map() -> list[dict[str, str]]:
             "evidence": "Import thunk to MIDASstartup.",
         },
         {
+            "va": "0x004040b0",
+            "proposed_name": "lcg_rand15",
+            "subsystem": "scene_support",
+            "confidence": "high",
+            "evidence": "Implements a local linear-congruential generator and returns a masked 15-bit pseudo-random value.",
+        },
+        {
+            "va": "0x004040e0",
+            "proposed_name": "fmod_x87_helper",
+            "subsystem": "math_runtime",
+            "confidence": "medium",
+            "evidence": "Compiler-style x87 helper used by scene code to wrap a floating-point phase value into a smaller range.",
+        },
+        {
             "va": "0x004015dd",
             "proposed_name": "load_music_module",
             "subsystem": "audio_init",
@@ -349,16 +419,16 @@ def texture_slot_rows() -> list[dict[str, str]]:
 
 def scene_dispatch_rows() -> list[dict[str, str]]:
     return [
-        {"scene_index": "0", "threshold": "0x0000000c", "target_va": "0x00401930", "target_name": "render_scene_case_0_7"},
-        {"scene_index": "1", "threshold": "0x00000012", "target_va": "0x00402330", "target_name": "render_scene_case_1_8"},
-        {"scene_index": "2", "threshold": "0x00000016", "target_va": "0x00401fc0", "target_name": "render_scene_case_2_4"},
-        {"scene_index": "3", "threshold": "0x00000019", "target_va": "0x00402d70", "target_name": "render_scene_case_3_6"},
-        {"scene_index": "4", "threshold": "0x0000001b", "target_va": "0x00401fc0", "target_name": "render_scene_case_2_4"},
-        {"scene_index": "5", "threshold": "0x0000001e", "target_va": "0x004027c0", "target_name": "render_scene_case_5"},
-        {"scene_index": "6", "threshold": "0x00000022", "target_va": "0x00402d70", "target_name": "render_scene_case_3_6"},
-        {"scene_index": "7", "threshold": "0x00000023", "target_va": "0x00401930", "target_name": "render_scene_case_0_7"},
-        {"scene_index": "8", "threshold": "0x00000026", "target_va": "0x00402330", "target_name": "render_scene_case_1_8"},
-        {"scene_index": "9", "threshold": "0x00000029", "target_va": "0x00403320", "target_name": "render_scene_case_9"},
+        {"scene_index": "0", "threshold": "0x0000000c", "target_va": "0x00401930", "target_name": "render_scene_intro_logo_family"},
+        {"scene_index": "1", "threshold": "0x00000012", "target_va": "0x00402330", "target_name": "render_scene_kaar_family"},
+        {"scene_index": "2", "threshold": "0x00000016", "target_va": "0x00401fc0", "target_name": "render_scene_s_pair_family"},
+        {"scene_index": "3", "threshold": "0x00000019", "target_va": "0x00402d70", "target_name": "render_scene_surf_family"},
+        {"scene_index": "4", "threshold": "0x0000001b", "target_va": "0x00401fc0", "target_name": "render_scene_s_pair_family"},
+        {"scene_index": "5", "threshold": "0x0000001e", "target_va": "0x004027c0", "target_name": "render_scene_fla_particle_family"},
+        {"scene_index": "6", "threshold": "0x00000022", "target_va": "0x00402d70", "target_name": "render_scene_surf_family"},
+        {"scene_index": "7", "threshold": "0x00000023", "target_va": "0x00401930", "target_name": "render_scene_intro_logo_family"},
+        {"scene_index": "8", "threshold": "0x00000026", "target_va": "0x00402330", "target_name": "render_scene_kaar_family"},
+        {"scene_index": "9", "threshold": "0x00000029", "target_va": "0x00403320", "target_name": "render_scene_finale_family"},
     ]
 
 
@@ -415,6 +485,142 @@ def wndproc_message_rows() -> list[dict[str, str]]:
     ]
 
 
+def scene_family_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "scene_cases": "0,7",
+            "family_va": "0x00401930",
+            "target_name": "render_scene_intro_logo_family",
+            "loader_va": "0x00401c00",
+            "primary_assets": "v1.tga;v2.tga;txt1.tga;txt2.tga;logo.tga;logotaus.tga",
+            "helper_routines": "draw_dual_texture_panel_pair;draw_soft_blended_quad;draw_timed_fade_quad;draw_jittered_overlay_quad",
+            "notes": "Intro/logo composition with paired art panels, logo textures, and time-driven overlays.",
+        },
+        {
+            "scene_cases": "1,8",
+            "family_va": "0x00402330",
+            "target_name": "render_scene_kaar_family",
+            "loader_va": "0x004025c0",
+            "primary_assets": "kaar128.tga;txt1.tga;txt2.tga",
+            "helper_routines": "draw_cached_ring_strip;draw_centered_textured_quad;draw_jittered_overlay_quad",
+            "notes": "Kaar family using the cached strip helper plus centered overlay quads.",
+        },
+        {
+            "scene_cases": "2,4",
+            "family_va": "0x00401fc0",
+            "target_name": "render_scene_s_pair_family",
+            "loader_va": "0x00402130",
+            "primary_assets": "s1.tga;s2.tga;txt2.tga",
+            "helper_routines": "draw_dual_texture_panel_pair;draw_jittered_overlay_quad",
+            "notes": "Mirrored paired-panel family driven by the s1/s2 texture pair.",
+        },
+        {
+            "scene_cases": "3,6",
+            "family_va": "0x00402d70",
+            "target_name": "render_scene_surf_family",
+            "loader_va": "0x00403120",
+            "primary_assets": "surf128.tga;fla.tga;txt1.tga",
+            "helper_routines": "draw_cached_ring_strip;draw_jittered_overlay_quad",
+            "notes": "Surf family mixing repeated textured quads with the cached strip helper.",
+        },
+        {
+            "scene_cases": "5",
+            "family_va": "0x004027c0",
+            "target_name": "render_scene_fla_particle_family",
+            "loader_va": "0x00402b40",
+            "primary_assets": "fla.tga;txt1.tga;logotaus.tga",
+            "helper_routines": "lcg_rand15;draw_soft_blended_quad;draw_jittered_overlay_quad",
+            "notes": "Per-element particle or sprite-field family with repeated pseudo-random seeding.",
+        },
+        {
+            "scene_cases": "9",
+            "family_va": "0x00403320",
+            "target_name": "render_scene_finale_family",
+            "loader_va": "0x00403400",
+            "primary_assets": "v1.tga;v2.tga;txt1.tga;txt2.tga",
+            "helper_routines": "load_basic_quad_textures;draw_dual_texture_panel_pair;draw_jittered_overlay_quad;draw_timed_fade_quad",
+            "notes": "Finale family reusing the shared quad art and a dedicated timed fade.",
+        },
+    ]
+
+
+def scene_helper_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "va": "0x00403400",
+            "proposed_name": "load_basic_quad_textures",
+            "callers": "render_scene_finale_family",
+            "parameter_guess": "none",
+            "confidence": "medium",
+            "evidence": "Dedicated four-texture loader for v1/v2/txt1/txt2 used only by the finale family.",
+        },
+        {
+            "va": "0x00403760",
+            "proposed_name": "draw_dual_texture_panel_pair",
+            "callers": "render_scene_intro_logo_family;render_scene_s_pair_family;render_scene_finale_family",
+            "parameter_guess": "int texture_slot_a, int texture_slot_b",
+            "confidence": "medium",
+            "evidence": "Called with slot pairs like (1,2) and (12,13), binds both textures, and emits a shared two-panel triangle primitive.",
+        },
+        {
+            "va": "0x004039d0",
+            "proposed_name": "draw_timed_fade_quad",
+            "callers": "render_scene_finale_family",
+            "parameter_guess": "float scene_time",
+            "confidence": "medium",
+            "evidence": "Wraps a time-derived phase through 0x004040e0, modulates glColor4f, and draws a blended textured quad.",
+        },
+        {
+            "va": "0x00403b40",
+            "proposed_name": "draw_jittered_overlay_quad",
+            "callers": "all scene families",
+            "parameter_guess": "int reseed_mask",
+            "confidence": "medium",
+            "evidence": "Alternates pseudo-randomized X/Y offsets through 0x004040b0 and draws a small blended overlay quad.",
+        },
+        {
+            "va": "0x00403c90",
+            "proposed_name": "draw_soft_blended_quad",
+            "callers": "render_scene_intro_logo_family;render_scene_fla_particle_family",
+            "parameter_guess": "float half_width, float half_height",
+            "confidence": "medium",
+            "evidence": "Draws a centered blended quad with slightly inset texture coordinates, likely to avoid texture edge bleed.",
+        },
+        {
+            "va": "0x00403d70",
+            "proposed_name": "draw_centered_textured_quad",
+            "callers": "render_scene_kaar_family",
+            "parameter_guess": "float half_width, float half_height",
+            "confidence": "medium",
+            "evidence": "Draws a centered textured quad from two float parameters for the kaar family.",
+        },
+        {
+            "va": "0x00403e40",
+            "proposed_name": "draw_cached_ring_strip",
+            "callers": "render_scene_kaar_family;render_scene_surf_family",
+            "parameter_guess": "double phase",
+            "confidence": "medium",
+            "evidence": "Builds and caches a 64-step sin/cos vertex strip, then draws it with glVertex3fv.",
+        },
+        {
+            "va": "0x004040b0",
+            "proposed_name": "lcg_rand15",
+            "callers": "scene families;draw_jittered_overlay_quad",
+            "parameter_guess": "none",
+            "confidence": "high",
+            "evidence": "Local linear-congruential generator returning a masked 15-bit pseudo-random value.",
+        },
+        {
+            "va": "0x004040e0",
+            "proposed_name": "fmod_x87_helper",
+            "callers": "render_scene_intro_logo_family;draw_timed_fade_quad",
+            "parameter_guess": "double value, double modulus",
+            "confidence": "medium",
+            "evidence": "Compiler-style x87 helper used to wrap a floating-point phase into a smaller range.",
+        },
+    ]
+
+
 def write_csv(path: pathlib.Path, rows: list[dict[str, object]], fieldnames: list[str]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -467,6 +673,16 @@ def main() -> None:
         OUT_DIR / "planet-scene-dispatch.csv",
         scene_dispatch_rows(),
         ["scene_index", "threshold", "target_va", "target_name"],
+    )
+    write_csv(
+        OUT_DIR / "planet-scene-family-map.csv",
+        scene_family_rows(),
+        ["scene_cases", "family_va", "target_name", "loader_va", "primary_assets", "helper_routines", "notes"],
+    )
+    write_csv(
+        OUT_DIR / "planet-scene-helper-map.csv",
+        scene_helper_rows(),
+        ["va", "proposed_name", "callers", "parameter_guess", "confidence", "evidence"],
     )
     write_csv(
         OUT_DIR / "planet-wndproc-messages.csv",
