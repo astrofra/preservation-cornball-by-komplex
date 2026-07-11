@@ -2,6 +2,10 @@
 
 Date: 2026-07-11
 Binary: `reverse/baseline/cornball/PLANET.EXE`
+
+> This note captures the pre-Cutter naming pass and contains addresses later corrected by interactive analysis.
+> Use [cutter-pass-01.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-01.md) as the current reference.
+
 Source data:
 
 - [planet-function-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-function-map.csv)

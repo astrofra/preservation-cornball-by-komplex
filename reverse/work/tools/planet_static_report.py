@@ -140,14 +140,35 @@ def find_string_xrefs(pe: pefile.PE, data: bytes, label: bytes) -> dict[str, obj
 def candidate_function_map() -> list[dict[str, str]]:
     return [
         {
-            "va": "0x00401510",
-            "proposed_name": "create_main_window",
-            "subsystem": "win32_init",
+            "va": "0x004012e0",
+            "proposed_name": "dispatch_scene_by_music_position",
+            "subsystem": "render_dispatch",
             "confidence": "high",
-            "evidence": "Uses Planet Cornball string, RegisterClassA, CreateWindowExA, ShowWindow.",
+            "evidence": "Selects scene by threshold table at 0x40e068 and dispatches through the switch table at 0x4013fc.",
         },
         {
-            "va": "0x00401880",
+            "va": "0x00401430",
+            "proposed_name": "run_main_loop",
+            "subsystem": "main_loop",
+            "confidence": "high",
+            "evidence": "Uses PeekMessageA/GetMessageA/TranslateMessage/DispatchMessageA, then renders and swaps buffers.",
+        },
+        {
+            "va": "0x00401510",
+            "proposed_name": "main",
+            "subsystem": "startup",
+            "confidence": "high",
+            "evidence": "Creates the window, initializes MIDAS, shows the window, primes GL, then calls the main loop.",
+        },
+        {
+            "va": "0x00401680",
+            "proposed_name": "main_wndproc",
+            "subsystem": "win32_init",
+            "confidence": "high",
+            "evidence": "Passed to RegisterClassA and handles window creation, resize, and shutdown messages.",
+        },
+        {
+            "va": "0x00401860",
             "proposed_name": "setup_pixel_format",
             "subsystem": "opengl_init",
             "confidence": "high",
@@ -155,45 +176,80 @@ def candidate_function_map() -> list[dict[str, str]]:
         },
         {
             "va": "0x00401930",
-            "proposed_name": "render_scene_or_frame",
-            "subsystem": "render_loop",
+            "proposed_name": "render_scene_case_0_7",
+            "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Starts with GL state setup and x87 transforms; likely a frame render path.",
+            "evidence": "Dispatched by cases 0 and 7 from the main scene switch.",
         },
         {
-            "va": "0x00401c10",
+            "va": "0x00401c00",
             "proposed_name": "load_intro_textures",
             "subsystem": "assets_textures",
             "confidence": "high",
             "evidence": "Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.",
         },
         {
-            "va": "0x00402140",
+            "va": "0x00401fc0",
+            "proposed_name": "render_scene_case_2_4",
+            "subsystem": "scene_render",
+            "confidence": "medium",
+            "evidence": "Dispatched by cases 2 and 4 from the main scene switch.",
+        },
+        {
+            "va": "0x00402130",
             "proposed_name": "load_scene_s_textures",
             "subsystem": "assets_textures",
             "confidence": "high",
             "evidence": "Loads s1/s2/txt2 textures and uploads them via glTexImage2D.",
         },
         {
-            "va": "0x004025d0",
+            "va": "0x00402330",
+            "proposed_name": "render_scene_case_1_8",
+            "subsystem": "scene_render",
+            "confidence": "medium",
+            "evidence": "Dispatched by cases 1 and 8 from the main scene switch.",
+        },
+        {
+            "va": "0x004025c0",
             "proposed_name": "load_kaar_textures",
             "subsystem": "assets_textures",
             "confidence": "high",
             "evidence": "Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.",
         },
         {
-            "va": "0x00402b70",
-            "proposed_name": "load_fla_texture_group",
-            "subsystem": "assets_textures",
-            "confidence": "medium",
-            "evidence": "References fla.tga and intro texture IDs; likely a grouped texture setup routine.",
+            "va": "0x004027c0",
+            "proposed_name": "render_scene_case_5",
+            "subsystem": "scene_render",
+            "confidence": "low",
+            "evidence": "Dedicated scene renderer dispatched only by case 5.",
         },
         {
-            "va": "0x00403130",
+            "va": "0x00402b40",
+            "proposed_name": "load_fla_texture_group",
+            "subsystem": "assets_textures",
+            "confidence": "high",
+            "evidence": "Zeros effect buffers, loads fla/txt1/logotaus textures, and uploads them.",
+        },
+        {
+            "va": "0x00402d70",
+            "proposed_name": "render_scene_case_3_6",
+            "subsystem": "scene_render",
+            "confidence": "low",
+            "evidence": "Shared scene renderer for cases 3 and 6.",
+        },
+        {
+            "va": "0x00403120",
             "proposed_name": "load_surf_texture_group",
             "subsystem": "assets_textures",
             "confidence": "high",
             "evidence": "Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.",
+        },
+        {
+            "va": "0x00403320",
+            "proposed_name": "render_scene_case_9",
+            "subsystem": "scene_render",
+            "confidence": "medium",
+            "evidence": "Final scene renderer dispatched only by case 9.",
         },
         {
             "va": "0x004036a0",
@@ -245,19 +301,50 @@ def candidate_function_map() -> list[dict[str, str]]:
             "evidence": "Import thunk to MIDASstartup.",
         },
         {
-            "va": "0x004045c0",
-            "proposed_name": "crt_startup_main",
-            "subsystem": "startup",
-            "confidence": "high",
-            "evidence": "MSVC CRT startup path leading into program entry.",
-        },
-        {
             "va": "0x004015dd",
             "proposed_name": "load_music_module",
             "subsystem": "audio_init",
             "confidence": "high",
             "evidence": "References aab.xm and MIDAS load/play wrappers in window init path.",
         },
+        {
+            "va": "0x004045c0",
+            "proposed_name": "crt_startup_main",
+            "subsystem": "startup",
+            "confidence": "high",
+            "evidence": "MSVC CRT startup path leading into the recovered main function.",
+        },
+    ]
+
+
+def texture_slot_rows() -> list[dict[str, str]]:
+    return [
+        {"slot": "1", "texture_va": "0x005d754c", "asset": "v1.tga", "first_loader": "0x00401c00"},
+        {"slot": "2", "texture_va": "0x005d7550", "asset": "v2.tga", "first_loader": "0x00401c00"},
+        {"slot": "3", "texture_va": "0x005d7554", "asset": "txt1.tga", "first_loader": "0x00401c00"},
+        {"slot": "4", "texture_va": "0x005d7558", "asset": "txt2.tga", "first_loader": "0x00401c00"},
+        {"slot": "5", "texture_va": "0x005d755c", "asset": "logo.tga", "first_loader": "0x00401c00"},
+        {"slot": "6", "texture_va": "0x005d7560", "asset": "logotaus.tga", "first_loader": "0x00401c00"},
+        {"slot": "9", "texture_va": "0x005d756c", "asset": "kaar128.tga", "first_loader": "0x004025c0"},
+        {"slot": "10", "texture_va": "0x005d7570", "asset": "surf128.tga", "first_loader": "0x00403120"},
+        {"slot": "11", "texture_va": "0x005d7574", "asset": "fla.tga", "first_loader": "0x00402b40"},
+        {"slot": "12", "texture_va": "0x005d7578", "asset": "s1.tga", "first_loader": "0x00402130"},
+        {"slot": "13", "texture_va": "0x005d757c", "asset": "s2.tga", "first_loader": "0x00402130"},
+    ]
+
+
+def scene_dispatch_rows() -> list[dict[str, str]]:
+    return [
+        {"scene_index": "0", "threshold": "0x0000000c", "target_va": "0x00401930", "target_name": "render_scene_case_0_7"},
+        {"scene_index": "1", "threshold": "0x00000012", "target_va": "0x00402330", "target_name": "render_scene_case_1_8"},
+        {"scene_index": "2", "threshold": "0x00000016", "target_va": "0x00401fc0", "target_name": "render_scene_case_2_4"},
+        {"scene_index": "3", "threshold": "0x00000019", "target_va": "0x00402d70", "target_name": "render_scene_case_3_6"},
+        {"scene_index": "4", "threshold": "0x0000001b", "target_va": "0x00401fc0", "target_name": "render_scene_case_2_4"},
+        {"scene_index": "5", "threshold": "0x0000001e", "target_va": "0x004027c0", "target_name": "render_scene_case_5"},
+        {"scene_index": "6", "threshold": "0x00000022", "target_va": "0x00402d70", "target_name": "render_scene_case_3_6"},
+        {"scene_index": "7", "threshold": "0x00000023", "target_va": "0x00401930", "target_name": "render_scene_case_0_7"},
+        {"scene_index": "8", "threshold": "0x00000026", "target_va": "0x00402330", "target_name": "render_scene_case_1_8"},
+        {"scene_index": "9", "threshold": "0x00000029", "target_va": "0x00403320", "target_name": "render_scene_case_9"},
     ]
 
 
@@ -303,6 +390,16 @@ def main() -> None:
         OUT_DIR / "planet-function-map.csv",
         function_map,
         ["va", "proposed_name", "subsystem", "confidence", "evidence"],
+    )
+    write_csv(
+        OUT_DIR / "planet-texture-slots.csv",
+        texture_slot_rows(),
+        ["slot", "texture_va", "asset", "first_loader"],
+    )
+    write_csv(
+        OUT_DIR / "planet-scene-dispatch.csv",
+        scene_dispatch_rows(),
+        ["scene_index", "threshold", "target_va", "target_name"],
     )
 
 

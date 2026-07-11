@@ -1,12 +1,20 @@
 va,proposed_name,subsystem,confidence,evidence
-0x00401510,create_main_window,win32_init,high,"Uses Planet Cornball string, RegisterClassA, CreateWindowExA, ShowWindow."
-0x00401880,setup_pixel_format,opengl_init,high,"Calls ChoosePixelFormat and SetPixelFormat, references setup error strings."
-0x00401930,render_scene_or_frame,render_loop,medium,Starts with GL state setup and x87 transforms; likely a frame render path.
-0x00401c10,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
-0x00402140,load_scene_s_textures,assets_textures,high,Loads s1/s2/txt2 textures and uploads them via glTexImage2D.
-0x004025d0,load_kaar_textures,assets_textures,high,Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.
-0x00402b70,load_fla_texture_group,assets_textures,medium,References fla.tga and intro texture IDs; likely a grouped texture setup routine.
-0x00403130,load_surf_texture_group,assets_textures,high,Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.
+0x004012e0,dispatch_scene_by_music_position,render_dispatch,high,Selects scene by threshold table at 0x40e068 and dispatches through the switch table at 0x4013fc.
+0x00401430,run_main_loop,main_loop,high,"Uses PeekMessageA/GetMessageA/TranslateMessage/DispatchMessageA, then renders and swaps buffers."
+0x00401510,main,startup,high,"Creates the window, initializes MIDAS, shows the window, primes GL, then calls the main loop."
+0x00401680,main_wndproc,win32_init,high,"Passed to RegisterClassA and handles window creation, resize, and shutdown messages."
+0x00401860,setup_pixel_format,opengl_init,high,"Calls ChoosePixelFormat and SetPixelFormat, references setup error strings."
+0x00401930,render_scene_case_0_7,scene_render,medium,Dispatched by cases 0 and 7 from the main scene switch.
+0x00401c00,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
+0x00401fc0,render_scene_case_2_4,scene_render,medium,Dispatched by cases 2 and 4 from the main scene switch.
+0x00402130,load_scene_s_textures,assets_textures,high,Loads s1/s2/txt2 textures and uploads them via glTexImage2D.
+0x00402330,render_scene_case_1_8,scene_render,medium,Dispatched by cases 1 and 8 from the main scene switch.
+0x004025c0,load_kaar_textures,assets_textures,high,Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.
+0x004027c0,render_scene_case_5,scene_render,low,Dedicated scene renderer dispatched only by case 5.
+0x00402b40,load_fla_texture_group,assets_textures,high,"Zeros effect buffers, loads fla/txt1/logotaus textures, and uploads them."
+0x00402d70,render_scene_case_3_6,scene_render,low,Shared scene renderer for cases 3 and 6.
+0x00403120,load_surf_texture_group,assets_textures,high,Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.
+0x00403320,render_scene_case_9,scene_render,medium,Final scene renderer dispatched only by case 9.
 0x004036a0,ensure_texture_loaded,assets_textures,high,Caches texture data by index and delegates to the raw TGA loader.
 0x004036bb,load_tga_256x256_rgba,assets_io,high,"Reads 18-byte TGA header, allocates 0x40000 bytes, swaps BGR(A) to RGB(A)."
 0x00404014,midas_play_module,audio_wrappers,high,Import thunk to MIDASplayModule.
@@ -14,5 +22,5 @@ va,proposed_name,subsystem,confidence,evidence
 0x00404020,midas_start_background_play,audio_wrappers,high,Import thunk to MIDASstartBackgroundPlay.
 0x00404026,midas_init,audio_wrappers,high,Import thunk to MIDASinit.
 0x0040402c,midas_startup,audio_wrappers,high,Import thunk to MIDASstartup.
-0x004045c0,crt_startup_main,startup,high,MSVC CRT startup path leading into program entry.
 0x004015dd,load_music_module,audio_init,high,References aab.xm and MIDAS load/play wrappers in window init path.
+0x004045c0,crt_startup_main,startup,high,MSVC CRT startup path leading into the recovered main function.
