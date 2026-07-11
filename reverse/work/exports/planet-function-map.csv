@@ -11,11 +11,11 @@ va,proposed_name,subsystem,confidence,evidence
 0x00401c00,load_intro_textures,assets_textures,high,Loads v1/v2/txt1/txt2/logo/logotaus TGAs and uploads them via glTexImage2D.
 0x00401fc0,render_scene_s_pair_family,scene_render,medium,Loads s1/s2/txt2 and reuses the same dual-panel helper as the intro family.
 0x00402130,load_scene_s_textures,assets_textures,high,Loads s1/s2/txt2 textures and uploads them via glTexImage2D.
-0x00402330,render_scene_kaar_family,scene_render,medium,Loads kaar128/txt1/txt2 and calls the cached strip helper at 0x00403e40.
+0x00402330,render_scene_kaar_family,scene_render,medium,"Loads kaar128/txt1/txt2, drives the shared time-scrolled tube-shell helper at 0x00403e40, and layers centered textured quads."
 0x004025c0,load_kaar_textures,assets_textures,high,Loads kaar128/txt1/txt2 textures and uploads them via glTexImage2D.
-0x004027c0,render_scene_fla_particle_family,scene_render,medium,"Loops over per-element state buffers, reseeds values through the local PRNG helper, and uses fla/logotaus/txt1 textures."
-0x00402b40,load_fla_texture_group,assets_textures,high,"Zeros effect buffers, loads fla/txt1/logotaus textures, and uploads them."
-0x00402d70,render_scene_surf_family,scene_render,medium,"Loads surf128/fla/txt1, uses repeated quad loops, and shares the cached strip helper with the kaar family."
+0x004027c0,render_scene_fla_particle_family,scene_render,medium,"Owns three 500-element particle-state blocks, reseeds dead particles through the local PRNG helper, and renders the fla texture as immediate-mode quads."
+0x00402b40,load_fla_texture_group,assets_textures,high,"Zeros three 500-element particle-state blocks, loads fla/txt1/logotaus textures, and uploads them."
+0x00402d70,render_scene_surf_family,scene_render,medium,"Loads surf128/fla/txt1, reuses the shared time-scrolled tube-shell helper, and layers repeated quad work plus the jitter overlay."
 0x00403120,load_surf_texture_group,assets_textures,high,Loads surf128/fla/txt1 textures and uploads them via glTexImage2D.
 0x00403320,render_scene_finale_family,scene_render,medium,"Loads the shared quad textures, reuses the intro dual-panel helper, and ends in a dedicated timed fade helper."
 0x00403400,load_basic_quad_textures,assets_textures,medium,Loads and uploads v1/v2/txt1/txt2 through a dedicated four-texture path used by the finale family.

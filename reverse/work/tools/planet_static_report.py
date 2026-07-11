@@ -228,7 +228,7 @@ def candidate_function_map() -> list[dict[str, str]]:
             "proposed_name": "render_scene_kaar_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Loads kaar128/txt1/txt2 and calls the cached strip helper at 0x00403e40.",
+            "evidence": "Loads kaar128/txt1/txt2, drives the shared time-scrolled tube-shell helper at 0x00403e40, and layers centered textured quads.",
         },
         {
             "va": "0x004025c0",
@@ -242,21 +242,21 @@ def candidate_function_map() -> list[dict[str, str]]:
             "proposed_name": "render_scene_fla_particle_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Loops over per-element state buffers, reseeds values through the local PRNG helper, and uses fla/logotaus/txt1 textures.",
+            "evidence": "Owns three 500-element particle-state blocks, reseeds dead particles through the local PRNG helper, and renders the fla texture as immediate-mode quads.",
         },
         {
             "va": "0x00402b40",
             "proposed_name": "load_fla_texture_group",
             "subsystem": "assets_textures",
             "confidence": "high",
-            "evidence": "Zeros effect buffers, loads fla/txt1/logotaus textures, and uploads them.",
+            "evidence": "Zeros three 500-element particle-state blocks, loads fla/txt1/logotaus textures, and uploads them.",
         },
         {
             "va": "0x00402d70",
             "proposed_name": "render_scene_surf_family",
             "subsystem": "scene_render",
             "confidence": "medium",
-            "evidence": "Loads surf128/fla/txt1, uses repeated quad loops, and shares the cached strip helper with the kaar family.",
+            "evidence": "Loads surf128/fla/txt1, reuses the shared time-scrolled tube-shell helper, and layers repeated quad work plus the jitter overlay.",
         },
         {
             "va": "0x00403120",
@@ -493,8 +493,8 @@ def scene_family_rows() -> list[dict[str, str]]:
             "target_name": "render_scene_intro_logo_family",
             "loader_va": "0x00401c00",
             "primary_assets": "v1.tga;v2.tga;txt1.tga;txt2.tga;logo.tga;logotaus.tga",
-            "helper_routines": "draw_dual_texture_panel_pair;draw_soft_blended_quad;draw_timed_fade_quad;draw_jittered_overlay_quad",
-            "notes": "Intro/logo composition with paired art panels, logo textures, and time-driven overlays.",
+            "helper_routines": "draw_dual_texture_bipyramid;draw_soft_blended_quad;draw_timed_fade_quad;draw_jittered_overlay_quad",
+            "notes": "Intro/logo composition with the shared bipyramid primitive, logo textures, and time-driven overlays.",
         },
         {
             "scene_cases": "1,8",
@@ -502,8 +502,8 @@ def scene_family_rows() -> list[dict[str, str]]:
             "target_name": "render_scene_kaar_family",
             "loader_va": "0x004025c0",
             "primary_assets": "kaar128.tga;txt1.tga;txt2.tga",
-            "helper_routines": "draw_cached_ring_strip;draw_centered_textured_quad;draw_jittered_overlay_quad",
-            "notes": "Kaar family using the cached strip helper plus centered overlay quads.",
+            "helper_routines": "draw_cached_tube_shell;draw_centered_textured_quad;draw_jittered_overlay_quad",
+            "notes": "Kaar family using the shared tube-shell helper plus centered overlay quads.",
         },
         {
             "scene_cases": "2,4",
@@ -511,8 +511,8 @@ def scene_family_rows() -> list[dict[str, str]]:
             "target_name": "render_scene_s_pair_family",
             "loader_va": "0x00402130",
             "primary_assets": "s1.tga;s2.tga;txt2.tga",
-            "helper_routines": "draw_dual_texture_panel_pair;draw_jittered_overlay_quad",
-            "notes": "Mirrored paired-panel family driven by the s1/s2 texture pair.",
+            "helper_routines": "draw_dual_texture_bipyramid;draw_jittered_overlay_quad",
+            "notes": "Mirrored bipyramid family driven by the s1/s2 texture pair.",
         },
         {
             "scene_cases": "3,6",
@@ -520,8 +520,8 @@ def scene_family_rows() -> list[dict[str, str]]:
             "target_name": "render_scene_surf_family",
             "loader_va": "0x00403120",
             "primary_assets": "surf128.tga;fla.tga;txt1.tga",
-            "helper_routines": "draw_cached_ring_strip;draw_jittered_overlay_quad",
-            "notes": "Surf family mixing repeated textured quads with the cached strip helper.",
+            "helper_routines": "draw_cached_tube_shell;draw_jittered_overlay_quad",
+            "notes": "Surf family mixing repeated textured quads with the shared tube-shell helper.",
         },
         {
             "scene_cases": "5",
@@ -538,7 +538,7 @@ def scene_family_rows() -> list[dict[str, str]]:
             "target_name": "render_scene_finale_family",
             "loader_va": "0x00403400",
             "primary_assets": "v1.tga;v2.tga;txt1.tga;txt2.tga",
-            "helper_routines": "load_basic_quad_textures;draw_dual_texture_panel_pair;draw_jittered_overlay_quad;draw_timed_fade_quad",
+            "helper_routines": "load_basic_quad_textures;draw_dual_texture_bipyramid;draw_jittered_overlay_quad;draw_timed_fade_quad",
             "notes": "Finale family reusing the shared quad art and a dedicated timed fade.",
         },
     ]
@@ -576,7 +576,7 @@ def scene_helper_rows() -> list[dict[str, str]]:
             "callers": "all scene families",
             "parameter_guess": "int reseed_mask",
             "confidence": "medium",
-            "evidence": "Alternates pseudo-randomized X/Y offsets through 0x004040b0 and draws a small blended overlay quad.",
+            "evidence": "Maintains shared pseudo-randomized X/Y offsets plus a call counter, reseeding when (g_overlay_call_counter & reseed_mask) == 0, then draws a small blended overlay quad.",
         },
         {
             "va": "0x00403c90",
@@ -639,7 +639,7 @@ def geometry_helper_rows() -> list[dict[str, str]]:
             "vertex_count": "256",
             "parameter_guess": "double phase",
             "cache_or_state": "tube_ring_vertices_neg_z;tube_ring_vertices_pos_z;g_tube_shell_cache_valid",
-            "notes": "Lazily builds two 64-vertex circles with radius 6 at z=-70 and z=+70, then emits 64 quads in the order ring0[i], ring0[next], ring1[next], ring1[i].",
+            "notes": "Lazily builds two 64-vertex circles with radius 6 at z=-70 and z=+70 using an angle step of 0.098125, then emits 64 quads in the order ring0[i], ring0[next], ring1[next], ring1[i].",
         },
     ]
 
@@ -757,6 +757,111 @@ def timing_global_rows() -> list[dict[str, str]]:
     ]
 
 
+def scene_state_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "address": "0x005d7948",
+            "size": "float",
+            "proposed_name": "g_overlay_jitter_y",
+            "owner": "draw_jittered_overlay_quad",
+            "used_by": "all scene families",
+            "structure_guess": "scalar",
+            "confidence": "high",
+            "notes": "Pseudo-random Y coordinate for the helper's small overlay quad. Reseeded from lcg_rand15 when (g_overlay_call_counter & reseed_mask) == 0.",
+        },
+        {
+            "address": "0x005d7950",
+            "size": "768 bytes",
+            "proposed_name": "tube_ring_vertices_neg_z",
+            "owner": "draw_cached_tube_shell",
+            "used_by": "render_scene_kaar_family;render_scene_surf_family",
+            "structure_guess": "64 * vec3",
+            "confidence": "high",
+            "notes": "Cached ring vertices for the z=-70 end of the tube shell.",
+        },
+        {
+            "address": "0x005d7c50",
+            "size": "768 bytes",
+            "proposed_name": "tube_ring_vertices_pos_z",
+            "owner": "draw_cached_tube_shell",
+            "used_by": "render_scene_kaar_family;render_scene_surf_family",
+            "structure_guess": "64 * vec3",
+            "confidence": "high",
+            "notes": "Cached ring vertices for the z=+70 end of the tube shell.",
+        },
+        {
+            "address": "0x005d7f50",
+            "size": "float",
+            "proposed_name": "g_overlay_jitter_x",
+            "owner": "draw_jittered_overlay_quad",
+            "used_by": "all scene families",
+            "structure_guess": "scalar",
+            "confidence": "high",
+            "notes": "Pseudo-random X coordinate for the helper's small overlay quad. Surf passes a reseed mask of 0, so it reseeds every call.",
+        },
+        {
+            "address": "0x005d7f54",
+            "size": "dword",
+            "proposed_name": "g_overlay_call_counter",
+            "owner": "draw_jittered_overlay_quad",
+            "used_by": "all scene families",
+            "structure_guess": "scalar",
+            "confidence": "high",
+            "notes": "Incremented on every helper call and tested against the caller-provided reseed mask before the next random offset refresh.",
+        },
+        {
+            "address": "0x005d7f58",
+            "size": "dword",
+            "proposed_name": "g_tube_shell_cache_valid",
+            "owner": "draw_cached_tube_shell",
+            "used_by": "render_scene_kaar_family;render_scene_surf_family",
+            "structure_guess": "scalar",
+            "confidence": "high",
+            "notes": "One-time cache guard for the two 64-vertex tube-shell rings.",
+        },
+        {
+            "address": "0x005d1778",
+            "size": "8000 bytes",
+            "proposed_name": "fla_particle_velocity_block",
+            "owner": "render_scene_fla_particle_family;load_fla_texture_group",
+            "used_by": "render_scene_fla_particle_family",
+            "structure_guess": "500 * struct { float unused0; float vel_x; float vel_y; float vel_z; }",
+            "confidence": "medium",
+            "notes": "Parallel particle block zeroed by the loader and updated every frame. Respawn path seeds vel_x in roughly [-0.35, +0.35], vel_y in [0.7, 1.0], vel_z = 0.",
+        },
+        {
+            "address": "0x005d36b8",
+            "size": "8000 bytes",
+            "proposed_name": "fla_particle_accel_block",
+            "owner": "render_scene_fla_particle_family;load_fla_texture_group",
+            "used_by": "render_scene_fla_particle_family",
+            "structure_guess": "500 * struct { float unused0; float accel_x; float accel_y; float accel_z; }",
+            "confidence": "medium",
+            "notes": "Parallel particle block zeroed by the loader. Current respawn path seeds accel_x = 0, accel_y in roughly [-0.16, -0.01], accel_z = 0.",
+        },
+        {
+            "address": "0x005d55f8",
+            "size": "8000 bytes",
+            "proposed_name": "fla_particle_energy_position_block",
+            "owner": "render_scene_fla_particle_family;load_fla_texture_group",
+            "used_by": "render_scene_fla_particle_family",
+            "structure_guess": "500 * struct { float brightness; float pos_x; float pos_y; float pos_z; }",
+            "confidence": "medium",
+            "notes": "Parallel particle block zeroed by the loader. Brightness decays by 0.9 each update; dead particles are respawned with random brightness and their position reset to the origin. pos_z is integrated but not consumed by the current draw loop.",
+        },
+        {
+            "address": "0x005d753c",
+            "size": "dword",
+            "proposed_name": "g_fla_texture_group_loaded",
+            "owner": "load_fla_texture_group",
+            "used_by": "render_scene_fla_particle_family",
+            "structure_guess": "scalar",
+            "confidence": "high",
+            "notes": "One-time initialization guard for the fla texture uploads and particle-buffer reset.",
+        },
+    ]
+
+
 def write_csv(path: pathlib.Path, rows: list[dict[str, object]], fieldnames: list[str]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -829,6 +934,11 @@ def main() -> None:
         OUT_DIR / "planet-timing-globals.csv",
         timing_global_rows(),
         ["address", "size", "proposed_name", "producer", "consumers", "confidence", "notes"],
+    )
+    write_csv(
+        OUT_DIR / "planet-scene-state-blocks.csv",
+        scene_state_rows(),
+        ["address", "size", "proposed_name", "owner", "used_by", "structure_guess", "confidence", "notes"],
     )
     write_csv(
         OUT_DIR / "planet-wndproc-messages.csv",

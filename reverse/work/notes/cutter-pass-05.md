@@ -82,7 +82,7 @@ Resolved build formula:
 for (int ring = 0; ring < 2; ++ring) {
     float z = (ring - 0.5f) * 140.0f;   // -70, +70
     for (int i = 0; i < 64; ++i) {
-        float angle = i * 0.1f;
+        float angle = i * 0.098125f;
         verts[ring][i].x = cosf(angle) * 6.0f;
         verts[ring][i].y = sinf(angle) * 6.0f;
         verts[ring][i].z = z;

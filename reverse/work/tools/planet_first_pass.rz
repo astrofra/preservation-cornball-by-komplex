@@ -72,8 +72,16 @@ s 0x0040e21c
 f+ g_lcg_state 4
 s 0x005510ec
 f+ startup_polar_table 384
+s 0x005d1778
+f+ fla_particle_velocity_block 8000
+s 0x005d36b8
+f+ fla_particle_accel_block 8000
 s 0x005d7548
 f+ texture_slot_table 56
+s 0x005d55f8
+f+ fla_particle_energy_position_block 8000
+s 0x005d753c
+f+ g_fla_texture_group_loaded 4
 s 0x005d7948
 f+ g_overlay_jitter_y 4
 s 0x005d7950

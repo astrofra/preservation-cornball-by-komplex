@@ -1,3 +1,3 @@
 va,proposed_name,primitive,vertex_count,parameter_guess,cache_or_state,notes
 0x00403760,draw_dual_texture_bipyramid,GL_TRIANGLES,24,"int texture_id_front, int texture_id_back",none,"Draws two four-triangle square pyramids sharing the base square at z=0. Base corners are (+/-60, +/-60, 0); apices are (0, 0, +60) and (0, 0, -60)."
-0x00403e40,draw_cached_tube_shell,GL_QUADS,256,double phase,tube_ring_vertices_neg_z;tube_ring_vertices_pos_z;g_tube_shell_cache_valid,"Lazily builds two 64-vertex circles with radius 6 at z=-70 and z=+70, then emits 64 quads in the order ring0[i], ring0[next], ring1[next], ring1[i]."
+0x00403e40,draw_cached_tube_shell,GL_QUADS,256,double phase,tube_ring_vertices_neg_z;tube_ring_vertices_pos_z;g_tube_shell_cache_valid,"Lazily builds two 64-vertex circles with radius 6 at z=-70 and z=+70 using an angle step of 0.098125, then emits 64 quads in the order ring0[i], ring0[next], ring1[next], ring1[i]."

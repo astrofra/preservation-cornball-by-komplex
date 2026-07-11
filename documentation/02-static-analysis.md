@@ -38,6 +38,10 @@ Set up a repeatable static-analysis workspace, install at least one open-source 
    - [reverse/work/notes/cutter-pass-04.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-04.md)
 14. Ran the fifth static pass on reusable geometry helpers:
    - [reverse/work/notes/cutter-pass-05.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-05.md)
+15. Ran the sixth static pass on helper-owned state and indirect MIDAS-field usage:
+   - [reverse/work/notes/cutter-pass-06.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-06.md)
+16. Ran the seventh static pass on the `fla` particle-state blocks:
+   - [reverse/work/notes/cutter-pass-07.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/notes/cutter-pass-07.md)
 
 ## Cutter Installation
 
@@ -70,6 +74,7 @@ Created under `reverse/work/exports/`:
 - [planet-scene-family-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-family-map.csv)
 - [planet-scene-helper-map.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-helper-map.csv)
 - [planet-geometry-helpers.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-geometry-helpers.csv)
+- [planet-scene-state-blocks.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-state-blocks.csv)
 - [planet-timing-globals.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-timing-globals.csv)
 - [planet-wndproc-messages.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-wndproc-messages.csv)
 
@@ -340,7 +345,7 @@ This helper:
 
 Resolved cache formula:
 
-- `angle = i * 0.1`
+- `angle = i * 0.098125`
 - `x = cos(angle) * 6`
 - `y = sin(angle) * 6`
 - `z = (ring - 0.5) * 140`
@@ -364,9 +369,90 @@ Pass 05 also sharpens the cached geometry labels:
 
 The geometry-specific export for this pass is [planet-geometry-helpers.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-geometry-helpers.csv).
 
+## Cutter Pass 06 Findings
+
+Pass 06 resolved the ownership of the remaining scene-side helper globals and checked whether the unused MIDAS fields leak back into rendering logic.
+
+### MIDAS field usage
+
+The current binary still shows no scene-side consumer for:
+
+- `MIDASplayStatus.pattern`
+- `MIDASplayStatus.syncInfo`
+
+`MIDASplayStatus.row` is copied into `g_cached_music_row`, but no downstream renderer read has been found so far.
+
+This keeps the effective renderer contract narrow:
+
+- music `position` selects the scene family
+- wall-clock deltas animate the active scene
+
+### Helper-owned state blocks
+
+The `0x005d79xx` / `0x005d7fxx` ranges are now resolved as shared helper state, not private `kaar` / `surf` family state.
+
+`draw_jittered_overlay_quad` owns:
+
+- `0x005d7948` -> `g_overlay_jitter_y`
+- `0x005d7f50` -> `g_overlay_jitter_x`
+- `0x005d7f54` -> `g_overlay_call_counter`
+
+Confirmed behavior:
+
+- the helper reseeds X/Y when `(g_overlay_call_counter & reseed_mask) == 0`
+- all scene families call it with `reseed_mask = 1` except `surf`
+- `surf` passes `0`, so it reseeds on every call
+
+`draw_cached_tube_shell` owns:
+
+- `0x005d7950` -> `tube_ring_vertices_neg_z`
+- `0x005d7c50` -> `tube_ring_vertices_pos_z`
+- `0x005d7f58` -> `g_tube_shell_cache_valid`
+
+The shared-state export for this pass is [planet-scene-state-blocks.csv](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/exports/planet-scene-state-blocks.csv).
+
+## Cutter Pass 07 Findings
+
+Pass 07 moved from shared helpers to the first real scene-owned state layout: the `fla` family.
+
+### `fla` particle blocks
+
+`load_fla_texture_group` zeroes three `0x1f40`-byte buffers before uploading textures:
+
+- `0x005d1778` -> `fla_particle_velocity_block`
+- `0x005d36b8` -> `fla_particle_accel_block`
+- `0x005d55f8` -> `fla_particle_energy_position_block`
+
+Each block is `500 * 16` bytes, which is consistent with a fixed `500`-particle effect using vec4-like records.
+
+### Working reconstruction
+
+The current working layout is:
+
+- `brightness`, `pos_x`, `pos_y`, `pos_z`
+- `unused0`, `vel_x`, `vel_y`, `vel_z`
+- `unused0`, `accel_x`, `accel_y`, `accel_z`
+
+The renderer updates each particle as:
+
+- fade: `brightness *= 0.9`
+- integrate position from velocity
+- integrate velocity from acceleration
+- respawn when `brightness <= 0.01`
+
+Respawn ranges now resolved from constants:
+
+- `vel_x` about `[-0.35, +0.35]`
+- `vel_y` about `[0.7, 1.0]`
+- `accel_y` about `[-0.16, -0.01]`
+
+This is strong evidence for a fountain or spark-field particle system rather than a generic sprite cloud.
+
+The draw path binds `fla.tga`, uses `brightness * 3.0` as a grayscale color scale, translates by `pos_x` / `pos_y`, and emits a small local quad for each live element.
+
 ## Current Deliverable Quality
 
-The workspace is now ready for continued interactive analysis with a documented five-pass Cutter workflow.
+The workspace is now ready for continued interactive analysis with a documented seven-pass Cutter workflow.
 
 The current map is still not final, but it is already useful enough to:
 
@@ -374,14 +460,15 @@ The current map is still not final, but it is already useful enough to:
 - separate scene-family logic from reusable helper routines
 - separate music-position scene switching from wall-clock scene timing
 - describe the shared geometry helpers as concrete primitives
-- focus the next pass on scene-local state and helper pseudocode cleanup
+- separate helper-owned state from the first confirmed scene-owned particle blocks
+- begin lifting a full scene family from stable data layouts instead of only from call graphs
 - keep naming decisions consistent across tools
 
 ## Next Step
 
 Continue the static pass interactively in Cutter:
 
-1. determine whether `pattern`, `row`, or `syncInfo` are consumed indirectly through scene-local state blocks
-2. continue naming scene-local state blocks in the `0x005d79xx` and `0x005d7fxx` ranges
-3. normalize helper pseudocode around the corrected bipyramid and tube-shell primitives
-4. begin reconstructing one full scene family against the now-stable helper library
+1. lift `render_scene_fla_particle_family` into higher-level C-style pseudocode with explicit particle structs and loop boundaries
+2. confirm whether the unused fourth float in the `fla` velocity and acceleration records is dead padding or a dormant field
+3. start reconstructing one complete scene family around the now-stable helper library and particle data layout
+4. continue looking for additional scene-owned blocks in the remaining families
