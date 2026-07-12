@@ -13,7 +13,7 @@ This first coding pass reconstructs:
 
 - the exact local PRNG used by `lcg_rand15`
 - the particle-state update path for `render_scene_fla_particle_family`
-- the first-screen subset of `render_scene_intro_logo_family`
+- the early multi-stage slice of `render_scene_intro_logo_family`
 - a frame-description adapter that exposes the scene's layered `LOGOTAUS`, particle, and `TXT1` overlay passes
 - the first source lift of `render_scene_kaar_family`, including its fogged tube-shell pass and centered `TXT1` quad
 - a thin OpenGL renderer that uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
@@ -114,7 +114,7 @@ The current C reconstruction models these points directly from the binary:
 - `LOGOTAUS.TGA` soft-blended quad with inset `0.01 .. 0.99` texture coordinates
 - `GL_ONE, GL_ONE_MINUS_SRC_COLOR` particle blending for the `fla` texture pass
 - `TXT1.TGA` jitter overlay using a fixed centered quad and a pseudo-randomized texture window
-- `intro` first-screen subset using the original `65 / 1 / 90` perspective envelope and a `TXT2.TGA` jitter overlay
+- `intro` early-stage composition using the original `65 / 1 / 90` perspective envelope, both `V1` and `V2` bipyramid halves, timed `LOGOTAUS` / `LOGO` soft quads, and a `TXT2` to `TXT1` jitter overlay switch
 - wrapped texture sampling for the overlay helpers, which is necessary for the `u/v = jitter - 1 .. jitter` window to behave like a scrolling wrapped sample instead of a clamped crop
 - `kaar` frame gate `= rand15 * 0.0000305185094759972`
 - `kaar` main branch only when the gate is `<= 0.25`
@@ -188,7 +188,7 @@ It currently:
 - uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
 - runs the `fla` scene with a fixed `60 Hz` full-frame simulation step
-- runs the opening `intro` subset with the same fixed `60 Hz` scene-frame cadence
+- runs the opening `intro` multi-stage slice with the same fixed `60 Hz` scene-frame cadence
 - runs the `kaar` scene with the same fixed `60 Hz` scene-frame cadence
 - supports `--hidden --frames <n>` for automated smoke runs
 - supports `--width`, `--height`, `--seed`, `--scene-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
@@ -199,6 +199,6 @@ The fixed-step choice is deliberate: the original `fla` routine is frame-based a
 
 Use this buildable `fla` / `intro` base as the template for the next lift:
 
-1. recover the remaining `intro/logo` soft-quad stages so the opening family stops at being only a first-screen subset
+1. recover the exact caller-side transforms, scales, and timing for the `intro/logo` soft-quad stages so the current buildable slice becomes visually faithful
 2. lift `surf` next, since it reuses the same tube-shell helper but changes the overlay reseed mask and texture usage
 3. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added

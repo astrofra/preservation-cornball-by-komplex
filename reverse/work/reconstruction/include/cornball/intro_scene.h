@@ -21,6 +21,8 @@ typedef struct CornballIntroLayerQuad {
     float half_width;
     float half_height;
     float depth_z;
+    float translate_x;
+    float translate_y;
     float color_r;
     float color_g;
     float color_b;

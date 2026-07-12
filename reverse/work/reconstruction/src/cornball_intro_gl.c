@@ -262,11 +262,28 @@ static void draw_layer_quad(const CornballIntroLayerQuad *quad)
 {
     glColor4f(quad->color_r, quad->color_g, quad->color_b, quad->color_a);
     glPushMatrix();
+    glTranslatef(quad->translate_x, quad->translate_y, 0.0f);
     glRotatef(quad->rotation_degrees, 0.0f, 0.0f, 1.0f);
     glBegin(GL_QUADS);
     draw_textured_quad_uv(quad);
     glEnd();
     glPopMatrix();
+}
+
+static void draw_soft_layer_quad(
+    const CornballIntroGlRenderer *renderer,
+    const CornballIntroLayerQuad *quad
+)
+{
+    unsigned int texture = get_texture_handle(renderer, quad->texture_slot);
+
+    if ((texture == 0u) || (quad->enabled == 0u)) {
+        return;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    draw_layer_quad(quad);
 }
 
 static void draw_bipyramid_half(float apex_z)
@@ -459,6 +476,10 @@ void cornball_intro_gl_render(const CornballIntroGlRenderer *renderer, const Cor
     if (frame->bipyramid.enabled != 0u) {
         draw_dual_texture_bipyramid(renderer, &frame->bipyramid);
     }
+
+    glDisable(GL_DEPTH_TEST);
+    draw_soft_layer_quad(renderer, &frame->logotaus_soft_quad);
+    draw_soft_layer_quad(renderer, &frame->logo_soft_quad);
 
     overlay_texture = get_texture_handle(renderer, frame->overlay_quad.texture_slot);
     if ((overlay_texture != 0u) && (frame->overlay_quad.enabled != 0u)) {
