@@ -9,6 +9,8 @@ add_library(
     STATIC
     src/cornball_fla_scene.c
     src/cornball_fla_gl.c
+    src/cornball_kaar_scene.c
+    src/cornball_kaar_gl.c
     src/cornball_random.c
 )
 
@@ -37,6 +39,19 @@ if(CORNBALL_BUILD_TESTS)
     endif()
 
     add_test(NAME fla_scene_smoketest COMMAND fla_scene_smoketest)
+
+    add_executable(
+        kaar_scene_smoketest
+        tests/kaar_scene_smoketest.c
+    )
+
+    target_link_libraries(kaar_scene_smoketest PRIVATE cornball_reconstruction)
+
+    if(NOT MSVC)
+        target_link_libraries(kaar_scene_smoketest PRIVATE m)
+    endif()
+
+    add_test(NAME kaar_scene_smoketest COMMAND kaar_scene_smoketest)
 endif()
 
 if(WIN32)
@@ -56,5 +71,23 @@ if(WIN32)
 
     if(CORNBALL_BUILD_TESTS)
         add_test(NAME fla_scene_preview_smoketest COMMAND fla_scene_preview --hidden --frames 2)
+    endif()
+
+    add_executable(
+        kaar_scene_preview
+        src/cornball_kaar_preview_win32.c
+    )
+
+    target_link_libraries(
+        kaar_scene_preview
+        PRIVATE
+        cornball_reconstruction
+        opengl32
+        gdi32
+        user32
+    )
+
+    if(CORNBALL_BUILD_TESTS)
+        add_test(NAME kaar_scene_preview_smoketest COMMAND kaar_scene_preview --hidden --frames 2)
     endif()
 endif()
