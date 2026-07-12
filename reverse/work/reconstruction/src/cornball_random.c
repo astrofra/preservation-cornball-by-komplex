@@ -6,7 +6,7 @@ enum {
     CORNBALL_LCG_OUTPUT_MASK = 0x7fffu
 };
 
-static const float kRand15UnitScale = 1.0f / 32767.0f;
+static const float kRand15UnitScale = 1.0f / 32768.0f;
 
 void cornball_random_seed(CornballRandom *random, uint32_t seed)
 {

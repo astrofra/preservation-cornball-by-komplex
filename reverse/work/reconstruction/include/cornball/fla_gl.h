@@ -8,6 +8,7 @@
 typedef struct CornballFlaGlRenderer {
     unsigned int fla_texture;
     unsigned int logotaus_texture;
+    unsigned int txt1_texture;
     int viewport_width;
     int viewport_height;
 } CornballFlaGlRenderer;

@@ -14,7 +14,6 @@
 static const float kWorldHalfWidth = 20.0f;
 static const float kWorldBottom = -6.0f;
 static const float kWorldTop = 30.0f;
-static const float kSpinnerHalfExtent = 2.0f;
 
 static void copy_error_message(char *dst, size_t dst_size, const char *src)
 {
@@ -214,6 +213,29 @@ static void apply_projection(const CornballFlaGlRenderer *renderer)
     glMatrixMode(GL_MODELVIEW);
 }
 
+static void draw_textured_quad_uv(
+    float half_width,
+    float half_height,
+    float depth_z,
+    float texcoord_min_u,
+    float texcoord_max_u,
+    float texcoord_min_v,
+    float texcoord_max_v
+)
+{
+    glTexCoord2f(texcoord_max_u, texcoord_min_v);
+    glVertex3f(half_width, -half_height, depth_z);
+
+    glTexCoord2f(texcoord_max_u, texcoord_max_v);
+    glVertex3f(half_width, half_height, depth_z);
+
+    glTexCoord2f(texcoord_min_u, texcoord_max_v);
+    glVertex3f(-half_width, half_height, depth_z);
+
+    glTexCoord2f(texcoord_min_u, texcoord_min_v);
+    glVertex3f(-half_width, -half_height, depth_z);
+}
+
 static void draw_mirrored_textured_quad(float center_x, float center_y, float half_width, float half_height)
 {
     glTexCoord2f(0.0f, 0.0f);
@@ -229,6 +251,22 @@ static void draw_mirrored_textured_quad(float center_x, float center_y, float ha
     glVertex3f(center_x - half_width, center_y - half_height, 0.0f);
 }
 
+static void draw_layer_quad(const CornballFlaLayerQuad *quad)
+{
+    glColor4f(quad->color_r, quad->color_g, quad->color_b, quad->color_a);
+    glBegin(GL_QUADS);
+    draw_textured_quad_uv(
+        quad->half_width,
+        quad->half_height,
+        quad->depth_z,
+        quad->texcoord_min_u,
+        quad->texcoord_max_u,
+        quad->texcoord_min_v,
+        quad->texcoord_max_v
+    );
+    glEnd();
+}
+
 int cornball_fla_gl_init(
     CornballFlaGlRenderer *renderer,
     const char *asset_root,
@@ -238,17 +276,27 @@ int cornball_fla_gl_init(
 {
     char fla_path[MAX_PATH];
     char logotaus_path[MAX_PATH];
+    char txt1_path[MAX_PATH];
 
     memset(renderer, 0, sizeof(*renderer));
 
     join_asset_path(fla_path, sizeof(fla_path), asset_root, "FLA.TGA");
     join_asset_path(logotaus_path, sizeof(logotaus_path), asset_root, "LOGOTAUS.TGA");
+    join_asset_path(txt1_path, sizeof(txt1_path), asset_root, "TXT1.TGA");
 
     if (!load_gl_texture_from_tga(fla_path, &renderer->fla_texture, error_message, error_message_size)) {
         return 0;
     }
 
     if (!load_gl_texture_from_tga(logotaus_path, &renderer->logotaus_texture, error_message, error_message_size)) {
+        glDeleteTextures(1, &renderer->fla_texture);
+        renderer->fla_texture = 0u;
+        return 0;
+    }
+
+    if (!load_gl_texture_from_tga(txt1_path, &renderer->txt1_texture, error_message, error_message_size)) {
+        glDeleteTextures(1, &renderer->logotaus_texture);
+        renderer->logotaus_texture = 0u;
         glDeleteTextures(1, &renderer->fla_texture);
         renderer->fla_texture = 0u;
         return 0;
@@ -278,6 +326,11 @@ void cornball_fla_gl_shutdown(CornballFlaGlRenderer *renderer)
         glDeleteTextures(1, &renderer->logotaus_texture);
         renderer->logotaus_texture = 0u;
     }
+
+    if (renderer->txt1_texture != 0u) {
+        glDeleteTextures(1, &renderer->txt1_texture);
+        renderer->txt1_texture = 0u;
+    }
 }
 
 void cornball_fla_gl_resize(CornballFlaGlRenderer *renderer, int width, int height)
@@ -302,16 +355,13 @@ void cornball_fla_gl_render(const CornballFlaGlRenderer *renderer, const Cornbal
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (renderer->logotaus_texture != 0u) {
+    if ((renderer->logotaus_texture != 0u) && (frame->logotaus_quad.enabled != 0u)) {
         glBindTexture(GL_TEXTURE_2D, renderer->logotaus_texture);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4f(1.0f, 1.0f, 0.5f, 1.0f);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
         glPushMatrix();
         glRotatef(frame->rotation_degrees, 0.0f, 0.0f, 1.0f);
-        glBegin(GL_QUADS);
-        draw_mirrored_textured_quad(0.0f, 0.0f, kSpinnerHalfExtent, kSpinnerHalfExtent);
-        glEnd();
+        draw_layer_quad(&frame->logotaus_quad);
         glPopMatrix();
     }
 
@@ -332,4 +382,10 @@ void cornball_fla_gl_render(const CornballFlaGlRenderer *renderer, const Cornbal
         );
     }
     glEnd();
+
+    if ((renderer->txt1_texture != 0u) && (frame->txt1_overlay_quad.enabled != 0u)) {
+        glBindTexture(GL_TEXTURE_2D, renderer->txt1_texture);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+        draw_layer_quad(&frame->txt1_overlay_quad);
+    }
 }

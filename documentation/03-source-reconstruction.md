@@ -13,8 +13,8 @@ This first coding pass reconstructs:
 
 - the exact local PRNG used by `lcg_rand15`
 - the particle-state update path for `render_scene_fla_particle_family`
-- a frame-description adapter that exposes the scene's rotation and per-particle draw quads
-- a thin OpenGL renderer that uploads `FLA.TGA` and `LOGOTAUS.TGA`
+- a frame-description adapter that exposes the scene's layered `LOGOTAUS`, particle, and `TXT1` overlay passes
+- a thin OpenGL renderer that uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
 - a Win32/WGL preview executable for Windows 10/11
 
 It does not yet reconstruct:
@@ -77,16 +77,24 @@ The current C reconstruction models these points directly from the binary:
 
 - `state = state * 214013 + 2531011`
 - `rand15 = (state >> 16) & 0x7fff`
+- `rand01 = rand15 / 32768.0`
 - brightness decay threshold at `0.01`
 - brightness decay factor at `0.9`
 - respawned `vel_x = (rand01 - 0.5) * 0.7`
 - respawned `vel_y = 0.7 + rand01 * 0.3`
 - respawned `accel_y = -0.01 - rand01 * 0.15`
-- frame rotation `= 180 + sin(scene_time * 0.72) * 19`
+- frame rotation `= 180 - sin(scene_time * 0.72) * 19`
 - draw grayscale `= brightness * 3.0`
 - textured particle quads using the original mirrored texcoord layout
-- `LOGOTAUS.TGA` spinner quad before the particle pass
+- `LOGOTAUS.TGA` soft-blended quad with inset `0.01 .. 0.99` texture coordinates
 - `GL_ONE, GL_ONE_MINUS_SRC_COLOR` particle blending for the `fla` texture pass
+- `TXT1.TGA` jitter overlay using a fixed centered quad and a pseudo-randomized texture window
+
+One important correction from the first pass:
+
+- `draw_jittered_overlay_quad` does not jitter the quad position
+- it jitters the sampled `u/v` window on a fixed `4 x 4` quad at `z = -2`
+- the helper-owned X/Y offsets therefore belong in the frame description as texture-coordinate bounds, not world-space translation
 
 ## Verification target
 
@@ -96,6 +104,7 @@ The smoke test checks:
 - the first reconstructed particle state after one scene update
 - frame rotation and draw-scale output
 - a second update on a particle that stays in the live branch
+- the helper-owned `TXT1` jitter overlay state emitted by the fixed-step frame tick
 - hidden OpenGL preview startup for two rendered frames
 
 ## Current verification status
@@ -127,16 +136,16 @@ It currently:
 
 - creates a raw Win32 window and WGL context
 - discovers the extracted demo assets under `reverse/baseline/cornball` or `original/cornball`
-- uploads `FLA.TGA` and `LOGOTAUS.TGA`
-- runs the `fla` scene with a fixed `60 Hz` simulation step
+- uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
+- runs the `fla` scene with a fixed `60 Hz` full-frame simulation step
 - supports `--hidden --frames <n>` for automated smoke runs
 
-The fixed-step choice is deliberate: the original particle update is frame-based, not delta-time-based, so the preview needs an explicit host-side simulation cadence instead of tying effect speed to an unrestricted modern refresh rate.
+The fixed-step choice is deliberate: the original `fla` routine is frame-based and consumes helper RNG state once per scene frame, so the preview needs an explicit host-side simulation cadence instead of tying particle respawns, overlay tint, and jitter state to an unrestricted modern refresh rate.
 
 ## Next step
 
 Use this buildable `fla` module as the template for the next lift:
 
 1. decide whether to keep the particle renderer on legacy immediate-mode OpenGL for preservation accuracy or start a second path that batches it into modern vertex buffers
-2. lift the shared `draw_soft_blended_quad` and `draw_jittered_overlay_quad` helpers so the `fla` preview gains more of the original scene layering
-3. continue with the next scene family, preferably `kaar` or `surf`, now that the shared tube-shell helper is already mapped
+2. continue with the next scene family, preferably `kaar` or `surf`, now that the shared tube-shell helper is already mapped
+3. decide whether the shared helper state should stay scene-local in the reconstruction or be split into a reusable support module before more families are lifted

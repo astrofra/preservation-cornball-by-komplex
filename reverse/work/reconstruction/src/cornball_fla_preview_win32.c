@@ -53,10 +53,12 @@ static int asset_root_looks_valid(const char *root)
 {
     char fla_path[MAX_PATH];
     char logo_path[MAX_PATH];
+    char txt1_path[MAX_PATH];
 
     join_path(fla_path, sizeof(fla_path), root, "FLA.TGA");
     join_path(logo_path, sizeof(logo_path), root, "LOGOTAUS.TGA");
-    return file_exists(fla_path) && file_exists(logo_path);
+    join_path(txt1_path, sizeof(txt1_path), root, "TXT1.TGA");
+    return file_exists(fla_path) && file_exists(logo_path) && file_exists(txt1_path);
 }
 
 static void get_executable_directory(char *dst, size_t dst_size)
@@ -303,11 +305,16 @@ static void update_and_render(PreviewApp *app)
         delta_seconds = 0.25;
     }
 
-    app->elapsed_seconds += delta_seconds;
     app->accumulator_seconds += delta_seconds;
 
     while (app->accumulator_seconds >= kSimulationStepSeconds) {
-        cornball_fla_scene_update(&app->scene, &app->random);
+        app->elapsed_seconds += kSimulationStepSeconds;
+        cornball_fla_scene_step_frame(
+            &app->scene,
+            &app->random,
+            app->elapsed_seconds,
+            &app->frame
+        );
         app->accumulator_seconds -= kSimulationStepSeconds;
     }
 
@@ -316,7 +323,6 @@ static void update_and_render(PreviewApp *app)
     app->height = client_rect.bottom - client_rect.top;
     cornball_fla_gl_resize(&app->renderer, app->width, app->height);
 
-    cornball_fla_scene_build_frame(&app->scene, app->elapsed_seconds, &app->frame);
     cornball_fla_gl_render(&app->renderer, &app->frame);
     SwapBuffers(app->hdc);
 
@@ -339,13 +345,14 @@ int main(int argc, char **argv)
     }
 
     if (!resolve_asset_root(&app.options)) {
-        fprintf(stderr, "Could not resolve a valid asset root containing FLA.TGA and LOGOTAUS.TGA.\n");
+        fprintf(stderr, "Could not resolve a valid asset root containing FLA.TGA, LOGOTAUS.TGA, and TXT1.TGA.\n");
         return 1;
     }
 
     cornball_random_seed(&app.random, 1u);
     cornball_fla_scene_clear(&app.scene);
     cornball_fla_scene_loader_pass(&app.scene);
+    cornball_fla_scene_build_frame(&app.scene, 0.0, &app.frame);
 
     if (!create_gl_window(&app)) {
         fprintf(stderr, "Failed to create Win32 OpenGL preview window.\n");
