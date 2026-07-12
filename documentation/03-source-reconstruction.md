@@ -13,14 +13,15 @@ This first coding pass reconstructs:
 
 - the exact local PRNG used by `lcg_rand15`
 - the particle-state update path for `render_scene_fla_particle_family`
-- a frame-description adapter that exposes the scene's rotation and per-particle draw quads without depending on legacy OpenGL immediate mode yet
+- a frame-description adapter that exposes the scene's rotation and per-particle draw quads
+- a thin OpenGL renderer that uploads `FLA.TGA` and `LOGOTAUS.TGA`
+- a Win32/WGL preview executable for Windows 10/11
 
 It does not yet reconstruct:
 
-- the original Win32 startup shell
-- texture upload helpers
 - the scene dispatcher
 - the rest of the scene families
+- the original MIDAS playback shell
 
 ## Added workspace
 
@@ -30,8 +31,11 @@ Created under `reverse/work/reconstruction/`:
 - [README.md](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/README.md)
 - [include/cornball/random.h](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/include/cornball/random.h)
 - [include/cornball/fla_scene.h](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/include/cornball/fla_scene.h)
+- [include/cornball/fla_gl.h](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/include/cornball/fla_gl.h)
 - [src/cornball_random.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_random.c)
 - [src/cornball_fla_scene.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_fla_scene.c)
+- [src/cornball_fla_gl.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_fla_gl.c)
+- [src/cornball_fla_preview_win32.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_fla_preview_win32.c)
 - [tests/fla_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/fla_scene_smoketest.c)
 
 ## Reconstruction choices
@@ -61,7 +65,11 @@ The code intentionally separates:
 - deterministic PRNG access
 - frame-description output
 
-That keeps the recovered logic testable before reintroducing real OpenGL calls.
+The OpenGL pass keeps that separation intact:
+
+- the scene module still owns the recovered update logic
+- the GL renderer only consumes frame data and asset paths
+- the Win32 preview only owns timing, WGL setup, and the message loop
 
 ## Current behavior reproduced
 
@@ -76,6 +84,9 @@ The current C reconstruction models these points directly from the binary:
 - respawned `accel_y = -0.01 - rand01 * 0.15`
 - frame rotation `= 180 + sin(scene_time * 0.72) * 19`
 - draw grayscale `= brightness * 3.0`
+- textured particle quads using the original mirrored texcoord layout
+- `LOGOTAUS.TGA` spinner quad before the particle pass
+- `GL_ONE, GL_ONE_MINUS_SRC_COLOR` particle blending for the `fla` texture pass
 
 ## Verification target
 
@@ -85,6 +96,7 @@ The smoke test checks:
 - the first reconstructed particle state after one scene update
 - frame rotation and draw-scale output
 - a second update on a particle that stays in the live branch
+- hidden OpenGL preview startup for two rendered frames
 
 ## Current verification status
 
@@ -103,11 +115,28 @@ Result:
 - configuration succeeded with Visual Studio 2022 / MSVC 19.41
 - the static library built successfully
 - `fla_scene_smoketest` passed
+- `fla_scene_preview_smoketest` passed
+
+## Preview entrypoint
+
+The new executable target is:
+
+- `fla_scene_preview`
+
+It currently:
+
+- creates a raw Win32 window and WGL context
+- discovers the extracted demo assets under `reverse/baseline/cornball` or `original/cornball`
+- uploads `FLA.TGA` and `LOGOTAUS.TGA`
+- runs the `fla` scene with a fixed `60 Hz` simulation step
+- supports `--hidden --frames <n>` for automated smoke runs
+
+The fixed-step choice is deliberate: the original particle update is frame-based, not delta-time-based, so the preview needs an explicit host-side simulation cadence instead of tying effect speed to an unrestricted modern refresh rate.
 
 ## Next step
 
 Use this buildable `fla` module as the template for the next lift:
 
-1. attach a thin OpenGL wrapper so this scene can render again on a modern host
-2. replace the current frame-description adapter with real draw calls once the wrapper exists
+1. decide whether to keep the particle renderer on legacy immediate-mode OpenGL for preservation accuracy or start a second path that batches it into modern vertex buffers
+2. lift the shared `draw_soft_blended_quad` and `draw_jittered_overlay_quad` helpers so the `fla` preview gains more of the original scene layering
 3. continue with the next scene family, preferably `kaar` or `surf`, now that the shared tube-shell helper is already mapped

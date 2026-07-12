@@ -8,6 +8,7 @@ add_library(
     cornball_reconstruction
     STATIC
     src/cornball_fla_scene.c
+    src/cornball_fla_gl.c
     src/cornball_random.c
 )
 
@@ -16,6 +17,7 @@ target_compile_features(cornball_reconstruction PUBLIC c_std_99)
 
 if(MSVC)
     target_compile_options(cornball_reconstruction PRIVATE /W4)
+    target_compile_definitions(cornball_reconstruction PRIVATE _CRT_SECURE_NO_WARNINGS)
 else()
     target_compile_options(cornball_reconstruction PRIVATE -Wall -Wextra -Wpedantic)
 endif()
@@ -35,4 +37,24 @@ if(CORNBALL_BUILD_TESTS)
     endif()
 
     add_test(NAME fla_scene_smoketest COMMAND fla_scene_smoketest)
+endif()
+
+if(WIN32)
+    add_executable(
+        fla_scene_preview
+        src/cornball_fla_preview_win32.c
+    )
+
+    target_link_libraries(
+        fla_scene_preview
+        PRIVATE
+        cornball_reconstruction
+        opengl32
+        gdi32
+        user32
+    )
+
+    if(CORNBALL_BUILD_TESTS)
+        add_test(NAME fla_scene_preview_smoketest COMMAND fla_scene_preview --hidden --frames 2)
+    endif()
 endif()
