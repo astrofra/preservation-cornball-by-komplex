@@ -7,8 +7,11 @@ option(CORNBALL_BUILD_TESTS "Build source-reconstruction smoke tests" ON)
 add_library(
     cornball_reconstruction
     STATIC
+    src/cornball_capture.c
     src/cornball_fla_scene.c
     src/cornball_fla_gl.c
+    src/cornball_intro_scene.c
+    src/cornball_intro_gl.c
     src/cornball_kaar_scene.c
     src/cornball_kaar_gl.c
     src/cornball_random.c
@@ -41,6 +44,19 @@ if(CORNBALL_BUILD_TESTS)
     add_test(NAME fla_scene_smoketest COMMAND fla_scene_smoketest)
 
     add_executable(
+        intro_scene_smoketest
+        tests/intro_scene_smoketest.c
+    )
+
+    target_link_libraries(intro_scene_smoketest PRIVATE cornball_reconstruction)
+
+    if(NOT MSVC)
+        target_link_libraries(intro_scene_smoketest PRIVATE m)
+    endif()
+
+    add_test(NAME intro_scene_smoketest COMMAND intro_scene_smoketest)
+
+    add_executable(
         kaar_scene_smoketest
         tests/kaar_scene_smoketest.c
     )
@@ -71,6 +87,24 @@ if(WIN32)
 
     if(CORNBALL_BUILD_TESTS)
         add_test(NAME fla_scene_preview_smoketest COMMAND fla_scene_preview --hidden --frames 2)
+    endif()
+
+    add_executable(
+        intro_scene_preview
+        src/cornball_intro_preview_win32.c
+    )
+
+    target_link_libraries(
+        intro_scene_preview
+        PRIVATE
+        cornball_reconstruction
+        opengl32
+        gdi32
+        user32
+    )
+
+    if(CORNBALL_BUILD_TESTS)
+        add_test(NAME intro_scene_preview_smoketest COMMAND intro_scene_preview --hidden --frames 2)
     endif()
 
     add_executable(

@@ -8,8 +8,8 @@
 #include <GL/gl.h>
 
 #include "cornball/capture.h"
-#include "cornball/fla_gl.h"
-#include "cornball/fla_scene.h"
+#include "cornball/intro_gl.h"
+#include "cornball/intro_scene.h"
 #include "cornball/random.h"
 
 typedef struct PreviewOptions {
@@ -38,9 +38,9 @@ typedef struct PreviewApp {
     unsigned int presented_frames;
     PreviewOptions options;
     CornballRandom random;
-    CornballFlaScene scene;
-    CornballFlaFrame frame;
-    CornballFlaGlRenderer renderer;
+    CornballIntroScene scene;
+    CornballIntroFrame frame;
+    CornballIntroGlRenderer renderer;
 } PreviewApp;
 
 static const double kSimulationStepSeconds = 1.0 / 60.0;
@@ -58,14 +58,25 @@ static void join_path(char *dst, size_t dst_size, const char *left, const char *
 
 static int asset_root_looks_valid(const char *root)
 {
-    char fla_path[MAX_PATH];
-    char logo_path[MAX_PATH];
+    char v1_path[MAX_PATH];
+    char v2_path[MAX_PATH];
     char txt1_path[MAX_PATH];
+    char txt2_path[MAX_PATH];
+    char logo_path[MAX_PATH];
+    char logotaus_path[MAX_PATH];
 
-    join_path(fla_path, sizeof(fla_path), root, "FLA.TGA");
-    join_path(logo_path, sizeof(logo_path), root, "LOGOTAUS.TGA");
+    join_path(v1_path, sizeof(v1_path), root, "V1.TGA");
+    join_path(v2_path, sizeof(v2_path), root, "V2.TGA");
     join_path(txt1_path, sizeof(txt1_path), root, "TXT1.TGA");
-    return file_exists(fla_path) && file_exists(logo_path) && file_exists(txt1_path);
+    join_path(txt2_path, sizeof(txt2_path), root, "TXT2.TGA");
+    join_path(logo_path, sizeof(logo_path), root, "LOGO.TGA");
+    join_path(logotaus_path, sizeof(logotaus_path), root, "LOGOTAUS.TGA");
+    return file_exists(v1_path) &&
+        file_exists(v2_path) &&
+        file_exists(txt1_path) &&
+        file_exists(txt2_path) &&
+        file_exists(logo_path) &&
+        file_exists(logotaus_path);
 }
 
 static void get_executable_directory(char *dst, size_t dst_size)
@@ -203,11 +214,11 @@ static void warmup_scene(PreviewApp *app)
 {
     double scene_time = 0.0;
 
-    cornball_fla_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
+    cornball_intro_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
 
     while ((scene_time + kSimulationStepSeconds) <= (app->options.scene_seconds + 1e-9)) {
         scene_time += kSimulationStepSeconds;
-        cornball_fla_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
+        cornball_intro_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
     }
 
     app->elapsed_seconds = scene_time;
@@ -294,7 +305,7 @@ static LRESULT CALLBACK preview_wndproc(HWND hwnd, UINT message, WPARAM w_param,
             app->width = LOWORD(l_param);
             app->height = HIWORD(l_param);
             if (app->hglrc != NULL) {
-                cornball_fla_gl_resize(&app->renderer, app->width, app->height);
+                cornball_intro_gl_resize(&app->renderer, app->width, app->height);
             }
         }
         return 0;
@@ -326,7 +337,7 @@ static LRESULT CALLBACK preview_wndproc(HWND hwnd, UINT message, WPARAM w_param,
 
 static int create_gl_window(PreviewApp *app)
 {
-    const char *class_name = "CornballFlaPreviewWindow";
+    const char *class_name = "CornballIntroPreviewWindow";
     WNDCLASSA wc;
     RECT rect;
     PIXELFORMATDESCRIPTOR pfd;
@@ -353,7 +364,7 @@ static int create_gl_window(PreviewApp *app)
     app->hwnd = CreateWindowExA(
         0,
         class_name,
-        "Cornball FLA Preview",
+        "Cornball Intro Preview",
         style,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -438,7 +449,7 @@ static int update_and_render(PreviewApp *app)
     if (automated_mode_enabled(app)) {
         if (app->presented_frames > 0u) {
             app->elapsed_seconds += kSimulationStepSeconds;
-            cornball_fla_scene_step_frame(
+            cornball_intro_scene_step_frame(
                 &app->scene,
                 &app->random,
                 app->elapsed_seconds,
@@ -454,7 +465,7 @@ static int update_and_render(PreviewApp *app)
 
         while (app->accumulator_seconds >= kSimulationStepSeconds) {
             app->elapsed_seconds += kSimulationStepSeconds;
-            cornball_fla_scene_step_frame(
+            cornball_intro_scene_step_frame(
                 &app->scene,
                 &app->random,
                 app->elapsed_seconds,
@@ -467,10 +478,10 @@ static int update_and_render(PreviewApp *app)
     GetClientRect(app->hwnd, &client_rect);
     app->width = client_rect.right - client_rect.left;
     app->height = client_rect.bottom - client_rect.top;
-    cornball_fla_gl_resize(&app->renderer, app->width, app->height);
+    cornball_intro_gl_resize(&app->renderer, app->width, app->height);
 
-    cornball_fla_gl_render(&app->renderer, &app->frame);
-    if (!capture_current_frame(app, "fla")) {
+    cornball_intro_gl_render(&app->renderer, &app->frame);
+    if (!capture_current_frame(app, "intro")) {
         return 0;
     }
     SwapBuffers(app->hdc);
@@ -496,13 +507,13 @@ int main(int argc, char **argv)
     }
 
     if (!resolve_asset_root(&app.options)) {
-        fprintf(stderr, "Could not resolve a valid asset root containing FLA.TGA, LOGOTAUS.TGA, and TXT1.TGA.\n");
+        fprintf(stderr, "Could not resolve a valid asset root containing V1.TGA, V2.TGA, TXT1.TGA, TXT2.TGA, LOGO.TGA, and LOGOTAUS.TGA.\n");
         return 1;
     }
 
     cornball_random_seed(&app.random, app.options.random_seed);
-    cornball_fla_scene_clear(&app.scene);
-    cornball_fla_scene_loader_pass(&app.scene);
+    cornball_intro_scene_clear(&app.scene);
+    cornball_intro_scene_loader_pass(&app.scene);
     warmup_scene(&app);
 
     if (!create_gl_window(&app)) {
@@ -519,7 +530,7 @@ int main(int argc, char **argv)
 
     QueryPerformanceCounter(&app.last_tick);
 
-    if (!cornball_fla_gl_init(&app.renderer, app.options.asset_root, error_message, sizeof(error_message))) {
+    if (!cornball_intro_gl_init(&app.renderer, app.options.asset_root, error_message, sizeof(error_message))) {
         fprintf(stderr, "OpenGL renderer init failed: %s\n", error_message);
         destroy_gl_window(&app);
         return 1;
@@ -547,7 +558,7 @@ int main(int argc, char **argv)
         }
     }
 
-    cornball_fla_gl_shutdown(&app.renderer);
+    cornball_intro_gl_shutdown(&app.renderer);
     destroy_gl_window(&app);
     return 0;
 }

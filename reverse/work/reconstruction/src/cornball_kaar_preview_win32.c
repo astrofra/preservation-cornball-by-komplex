@@ -7,14 +7,21 @@
 
 #include <GL/gl.h>
 
+#include "cornball/capture.h"
 #include "cornball/kaar_gl.h"
 #include "cornball/kaar_scene.h"
 #include "cornball/random.h"
 
 typedef struct PreviewOptions {
     char asset_root[MAX_PATH];
+    char capture_dir[MAX_PATH];
     unsigned int max_frames;
+    unsigned int capture_every;
+    unsigned int random_seed;
     int hidden;
+    int window_width;
+    int window_height;
+    double scene_seconds;
 } PreviewOptions;
 
 typedef struct PreviewApp {
@@ -87,13 +94,34 @@ static int parse_options(int argc, char **argv, PreviewOptions *options)
     int i;
 
     memset(options, 0, sizeof(*options));
+    options->random_seed = 1u;
+    options->window_width = 1280;
+    options->window_height = 720;
 
     for (i = 1; i < argc; ++i) {
         if ((strcmp(argv[i], "--asset-root") == 0) && ((i + 1) < argc)) {
             snprintf(options->asset_root, sizeof(options->asset_root), "%s", argv[i + 1]);
             ++i;
+        } else if ((strcmp(argv[i], "--capture-dir") == 0) && ((i + 1) < argc)) {
+            snprintf(options->capture_dir, sizeof(options->capture_dir), "%s", argv[i + 1]);
+            ++i;
         } else if ((strcmp(argv[i], "--frames") == 0) && ((i + 1) < argc)) {
             options->max_frames = (unsigned int)strtoul(argv[i + 1], NULL, 10);
+            ++i;
+        } else if ((strcmp(argv[i], "--capture-every") == 0) && ((i + 1) < argc)) {
+            options->capture_every = (unsigned int)strtoul(argv[i + 1], NULL, 10);
+            ++i;
+        } else if ((strcmp(argv[i], "--seed") == 0) && ((i + 1) < argc)) {
+            options->random_seed = (unsigned int)strtoul(argv[i + 1], NULL, 10);
+            ++i;
+        } else if ((strcmp(argv[i], "--width") == 0) && ((i + 1) < argc)) {
+            options->window_width = (int)strtol(argv[i + 1], NULL, 10);
+            ++i;
+        } else if ((strcmp(argv[i], "--height") == 0) && ((i + 1) < argc)) {
+            options->window_height = (int)strtol(argv[i + 1], NULL, 10);
+            ++i;
+        } else if ((strcmp(argv[i], "--scene-seconds") == 0) && ((i + 1) < argc)) {
+            options->scene_seconds = strtod(argv[i + 1], NULL);
             ++i;
         } else if (strcmp(argv[i], "--hidden") == 0) {
             options->hidden = 1;
@@ -101,6 +129,22 @@ static int parse_options(int argc, char **argv, PreviewOptions *options)
             fprintf(stderr, "Unknown argument: %s\n", argv[i]);
             return 0;
         }
+    }
+
+    if (options->window_width <= 0) {
+        options->window_width = 1280;
+    }
+
+    if (options->window_height <= 0) {
+        options->window_height = 720;
+    }
+
+    if (options->random_seed == 0u) {
+        options->random_seed = 1u;
+    }
+
+    if (options->scene_seconds < 0.0) {
+        options->scene_seconds = 0.0;
     }
 
     return 1;
@@ -140,6 +184,96 @@ static int resolve_asset_root(PreviewOptions *options)
     }
 
     return 0;
+}
+
+static int ensure_directory_exists(const char *path)
+{
+    if ((path == NULL) || (path[0] == '\0')) {
+        return 0;
+    }
+
+    if (CreateDirectoryA(path, NULL) != 0) {
+        return 1;
+    }
+
+    return GetLastError() == ERROR_ALREADY_EXISTS;
+}
+
+static void warmup_scene(PreviewApp *app)
+{
+    double scene_time = 0.0;
+
+    cornball_kaar_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
+
+    while ((scene_time + kSimulationStepSeconds) <= (app->options.scene_seconds + 1e-9)) {
+        scene_time += kSimulationStepSeconds;
+        cornball_kaar_scene_step_frame(&app->scene, &app->random, scene_time, &app->frame);
+    }
+
+    app->elapsed_seconds = scene_time;
+}
+
+static int automated_mode_enabled(const PreviewApp *app)
+{
+    return (app->options.hidden != 0) ||
+        (app->options.max_frames > 0u) ||
+        (app->options.capture_every > 0u);
+}
+
+static int capture_current_frame(PreviewApp *app, const char *prefix)
+{
+    char output_path[MAX_PATH];
+    char error_message[256];
+    unsigned char *pixels;
+    size_t pixel_count;
+
+    if ((app->options.capture_every == 0u) || (app->options.capture_dir[0] == '\0')) {
+        return 1;
+    }
+
+    if ((app->presented_frames % app->options.capture_every) != 0u) {
+        return 1;
+    }
+
+    if (!ensure_directory_exists(app->options.capture_dir)) {
+        fprintf(stderr, "Failed to create capture directory: %s\n", app->options.capture_dir);
+        return 0;
+    }
+
+    pixel_count = (size_t)app->width * (size_t)app->height * 3u;
+    pixels = (unsigned char *)malloc(pixel_count);
+    if (pixels == NULL) {
+        fprintf(stderr, "Out of memory while capturing frame.\n");
+        return 0;
+    }
+
+    glReadBuffer(GL_BACK);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, app->width, app->height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+    snprintf(
+        output_path,
+        sizeof(output_path),
+        "%s\\%s_frame_%06u.tga",
+        app->options.capture_dir,
+        prefix,
+        app->presented_frames
+    );
+
+    if (!cornball_capture_write_tga24(
+            output_path,
+            app->width,
+            app->height,
+            pixels,
+            error_message,
+            sizeof(error_message))) {
+        free(pixels);
+        fprintf(stderr, "Capture write failed: %s\n", error_message);
+        return 0;
+    }
+
+    free(pixels);
+    return 1;
 }
 
 static LRESULT CALLBACK preview_wndproc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param)
@@ -212,8 +346,8 @@ static int create_gl_window(PreviewApp *app)
 
     rect.left = 0;
     rect.top = 0;
-    rect.right = 1280;
-    rect.bottom = 720;
+    rect.right = app->options.window_width;
+    rect.bottom = app->options.window_height;
     AdjustWindowRect(&rect, style, FALSE);
 
     app->hwnd = CreateWindowExA(
@@ -291,7 +425,7 @@ static void destroy_gl_window(PreviewApp *app)
     }
 }
 
-static void update_and_render(PreviewApp *app)
+static int update_and_render(PreviewApp *app)
 {
     LARGE_INTEGER now;
     double delta_seconds;
@@ -301,21 +435,33 @@ static void update_and_render(PreviewApp *app)
     delta_seconds = (double)(now.QuadPart - app->last_tick.QuadPart) / (double)app->perf_frequency.QuadPart;
     app->last_tick = now;
 
-    if (delta_seconds > 0.25) {
-        delta_seconds = 0.25;
-    }
+    if (automated_mode_enabled(app)) {
+        if (app->presented_frames > 0u) {
+            app->elapsed_seconds += kSimulationStepSeconds;
+            cornball_kaar_scene_step_frame(
+                &app->scene,
+                &app->random,
+                app->elapsed_seconds,
+                &app->frame
+            );
+        }
+    } else {
+        if (delta_seconds > 0.25) {
+            delta_seconds = 0.25;
+        }
 
-    app->accumulator_seconds += delta_seconds;
+        app->accumulator_seconds += delta_seconds;
 
-    while (app->accumulator_seconds >= kSimulationStepSeconds) {
-        app->elapsed_seconds += kSimulationStepSeconds;
-        cornball_kaar_scene_step_frame(
-            &app->scene,
-            &app->random,
-            app->elapsed_seconds,
-            &app->frame
-        );
-        app->accumulator_seconds -= kSimulationStepSeconds;
+        while (app->accumulator_seconds >= kSimulationStepSeconds) {
+            app->elapsed_seconds += kSimulationStepSeconds;
+            cornball_kaar_scene_step_frame(
+                &app->scene,
+                &app->random,
+                app->elapsed_seconds,
+                &app->frame
+            );
+            app->accumulator_seconds -= kSimulationStepSeconds;
+        }
     }
 
     GetClientRect(app->hwnd, &client_rect);
@@ -324,12 +470,17 @@ static void update_and_render(PreviewApp *app)
     cornball_kaar_gl_resize(&app->renderer, app->width, app->height);
 
     cornball_kaar_gl_render(&app->renderer, &app->frame);
+    if (!capture_current_frame(app, "kaar")) {
+        return 0;
+    }
     SwapBuffers(app->hdc);
 
     ++app->presented_frames;
     if ((app->options.max_frames > 0u) && (app->presented_frames >= app->options.max_frames)) {
         app->running = 0;
     }
+
+    return 1;
 }
 
 int main(int argc, char **argv)
@@ -349,9 +500,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    cornball_random_seed(&app.random, 1u);
+    cornball_random_seed(&app.random, app.options.random_seed);
     cornball_kaar_scene_clear(&app.scene);
     cornball_kaar_scene_loader_pass(&app.scene);
+    warmup_scene(&app);
 
     if (!create_gl_window(&app)) {
         fprintf(stderr, "Failed to create Win32 OpenGL preview window.\n");
@@ -390,7 +542,9 @@ int main(int argc, char **argv)
             break;
         }
 
-        update_and_render(&app);
+        if (!update_and_render(&app)) {
+            app.running = 0;
+        }
     }
 
     cornball_kaar_gl_shutdown(&app.renderer);
