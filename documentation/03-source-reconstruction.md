@@ -16,9 +16,11 @@ This first coding pass reconstructs:
 - the early multi-stage slice of `render_scene_intro_logo_family`
 - a frame-description adapter that exposes the scene's layered `LOGOTAUS`, particle, and `TXT1` overlay passes
 - the first source lift of `render_scene_kaar_family`, including its fogged tube-shell pass and centered `TXT1` quad
+- the first source lift of `render_scene_surf_family`, including its inside-camera tube shell, additive `FLA` quad stack, rotating `SURF128` foreground layer, and `TXT1` overlay
 - a thin OpenGL renderer that uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
 - a third OpenGL renderer that uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - a second OpenGL renderer that uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
+- a fourth OpenGL renderer that uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
 - a Win32/WGL preview executable for Windows 10/11
 - a reusable back-buffer frame-dump path for hidden preview captures
 
@@ -53,9 +55,15 @@ Created under `reverse/work/reconstruction/`:
 - [src/cornball_kaar_scene.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_kaar_scene.c)
 - [src/cornball_kaar_gl.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_kaar_gl.c)
 - [src/cornball_kaar_preview_win32.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_kaar_preview_win32.c)
+- [include/cornball/surf_scene.h](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/include/cornball/surf_scene.h)
+- [include/cornball/surf_gl.h](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/include/cornball/surf_gl.h)
+- [src/cornball_surf_scene.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_scene.c)
+- [src/cornball_surf_gl.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_gl.c)
+- [src/cornball_surf_preview_win32.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_preview_win32.c)
 - [tests/fla_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/fla_scene_smoketest.c)
 - [tests/intro_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/intro_scene_smoketest.c)
 - [tests/kaar_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/kaar_scene_smoketest.c)
+- [tests/surf_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/surf_scene_smoketest.c)
 
 ## Reconstruction choices
 
@@ -127,6 +135,11 @@ The current C reconstruction models these points directly from the binary:
 - tube-shell rotation `rx = sin(t * 0.3) * 190`, `ry = t * 2`, `rz = t`
 - tube-shell texture phase `= t * 0.1`, with the opposite side sampled at `phase + 3.0`
 - centered `TXT1.TGA` quad rotating at `t * 11` with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
+- `surf` fogged `SURF128.TGA` tube-shell pass with the global `65 / 1 / 90` perspective camera still active
+- `surf` tube-shell transform `x = cos(t * 0.2) * 3`, `y = cos(t * 0.3) * 3`, `rz_pre = t * 3`, `rx = sin(t * 0.5) * 30`, `rz_post = t * 32`, `phase = -0.3 * t`
+- `surf` additive `FLA.TGA` stack of `32` quads, with base `z = t * 8` and per-layer step `-10`
+- `surf` rotating `SURF128.TGA` foreground quad at `z = -1`, `u/v = 0 .. 2`, rotation `= t * 11`, blend `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
+- `surf` `TXT1.TGA` jitter overlay with reseed mask `0`, so it consumes two fresh random samples every frame
 
 One important correction from the first pass:
 
@@ -173,9 +186,11 @@ Result:
 - `fla_scene_smoketest` passed
 - `intro_scene_smoketest` passed
 - `kaar_scene_smoketest` passed
+- `surf_scene_smoketest` passed
 - `fla_scene_preview_smoketest` passed
 - `intro_scene_preview_smoketest` passed
 - `kaar_scene_preview_smoketest` passed
+- `surf_scene_preview_smoketest` passed
 
 ## Preview entrypoint
 
@@ -183,6 +198,7 @@ The new executable target is:
 
 - `fla_scene_preview`
 - `intro_scene_preview`
+- `surf_scene_preview`
 
 It currently:
 
@@ -191,9 +207,11 @@ It currently:
 - uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
 - uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
+- uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
 - runs the `fla` scene with a fixed `60 Hz` full-frame simulation step
 - runs the opening `intro` multi-stage slice with the same fixed `60 Hz` scene-frame cadence
 - runs the `kaar` scene with the same fixed `60 Hz` scene-frame cadence
+- runs the `surf` scene with the same fixed `60 Hz` scene-frame cadence
 - supports `--hidden --frames <n>` for automated smoke runs
 - supports `--width`, `--height`, `--seed`, `--scene-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
 
@@ -203,6 +221,6 @@ The fixed-step choice is deliberate: the original `fla` routine is frame-based a
 
 Use this buildable `fla` / `intro` base as the template for the next lift:
 
-1. compare the exact intro caller lift against the cropped VHS reference and resolve any remaining asset-orientation or time-zero mismatch
-2. lift `surf` next, since it reuses the same tube-shell helper but changes the overlay reseed mask and texture usage
+1. compare the new `surf` reconstruction against the `frame_002548` reference anchor and tune any remaining projection or layer-order mismatch
+2. revisit the earlier `kaar` preview with the now-confirmed global perspective setup, since its current renderer still uses an orthographic approximation
 3. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added
