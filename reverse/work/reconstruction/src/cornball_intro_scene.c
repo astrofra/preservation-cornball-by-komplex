@@ -6,26 +6,42 @@
 static const float kBipyramidBaseRotateZ = 90.0f;
 static const float kOverlayHalfExtent = 2.0f;
 static const float kOverlayDepth = -2.0f;
-static const float kOverlayTint = 0.85f;
 static const float kSoftQuadDepth = -2.0f;
 static const float kSoftQuadInsetTexcoord = 0.01f;
-static const float kLogotausHalfExtent = 1.45f;
-static const float kLogotausColor = 0.45f;
-static const float kLogotausAlphaScale = 0.55f;
-static const float kLogoHalfExtent = 1.05f;
-static const float kLogoAlphaScale = 0.65f;
+static const float kSoftQuadMaxUTexcoord = 0.99f;
+static const float kSoftQuadTopLeftVTexcoord = 0.99f;
+static const float kSoftQuadTopRightVTexcoord = 1.0f;
 static const uint32_t kOverlayReseedMask = 1u;
 static const double kBipyramidRotateYRate = 2.2;
 static const double kBipyramidRotateXRate = 10.0;
-static const double kTxt2OpeningPhaseSeconds = 5.0;
-static const double kLogotausFadeInStartSeconds = 1.0;
-static const double kLogotausFadeInEndSeconds = 1.5;
-static const double kLogotausFadeOutStartSeconds = 4.0;
-static const double kLogotausFadeOutEndSeconds = 5.0;
-static const double kLogoFadeInStartSeconds = 2.0;
-static const double kLogoFadeInEndSeconds = 2.5;
-static const double kLogoFadeOutStartSeconds = 4.25;
-static const double kLogoFadeOutEndSeconds = 5.0;
+static const double kBipyramidColorRandScale = 0.21;
+static const double kBipyramidColorRedBase = 0.3;
+static const double kBipyramidColorGreenBase = 0.31;
+static const double kBipyramidColorBlueBase = 0.1;
+static const double kTxt2LastInclusiveSeconds = 5.0;
+static const double kLogotausHalfWidthBase = 3.2;
+static const double kLogotausHalfWidthRate = 0.02;
+static const double kLogotausHalfHeightScale = 0.8;
+static const double kLogotausMinHalfWidth = 1.0;
+static const double kLogotausRotateRate = 9.0;
+static const double kLogoIntensityBias = 3.0;
+static const double kLogoIntensityDenominatorRate = 0.5;
+static const double kLogoRotateBase = 180.0;
+static const double kLogoRotateRate = 3.0;
+static const double kLogoPhaseBase = 0.3;
+static const double kLogoPhaseRate = 0.06;
+static const double kLogoPhaseWrap = 2.0;
+static const double kLogoHalfWidthScale = 2.0;
+static const double kLogoHalfHeightScale = 0.5;
+static const double kOverlayIntensityBias = 1.0;
+static const double kOverlayIntensityDenominatorRate = 0.8;
+static const double kLayerVisibilityThreshold = 0.01;
+
+static void set_texcoord(CornballIntroLayerQuad *quad, size_t index, float u, float v)
+{
+    quad->texcoords[index].u = u;
+    quad->texcoords[index].v = v;
+}
 
 static void fill_layer_quad(
     CornballIntroLayerQuad *quad,
@@ -39,10 +55,6 @@ static void fill_layer_quad(
     float color_g,
     float color_b,
     float color_a,
-    float texcoord_min_u,
-    float texcoord_max_u,
-    float texcoord_min_v,
-    float texcoord_max_v,
     float rotation_degrees
 )
 {
@@ -57,10 +69,6 @@ static void fill_layer_quad(
     quad->color_g = color_g;
     quad->color_b = color_b;
     quad->color_a = color_a;
-    quad->texcoord_min_u = texcoord_min_u;
-    quad->texcoord_max_u = texcoord_max_u;
-    quad->texcoord_min_v = texcoord_min_v;
-    quad->texcoord_max_v = texcoord_max_v;
     quad->rotation_degrees = rotation_degrees;
 }
 
@@ -69,124 +77,64 @@ static void disable_layer_quad(CornballIntroLayerQuad *quad)
     memset(quad, 0, sizeof(*quad));
 }
 
-static float linear_unit_ramp(double scene_elapsed_seconds, double start_seconds, double end_seconds)
+static void set_soft_blended_quad_texcoords(CornballIntroLayerQuad *quad)
 {
-    if (scene_elapsed_seconds <= start_seconds) {
-        return 0.0f;
-    }
-
-    if (scene_elapsed_seconds >= end_seconds) {
-        return 1.0f;
-    }
-
-    return (float)((scene_elapsed_seconds - start_seconds) / (end_seconds - start_seconds));
+    set_texcoord(quad, 0u, kSoftQuadMaxUTexcoord, kSoftQuadInsetTexcoord);
+    set_texcoord(quad, 1u, kSoftQuadMaxUTexcoord, kSoftQuadTopRightVTexcoord);
+    set_texcoord(quad, 2u, kSoftQuadInsetTexcoord, kSoftQuadTopLeftVTexcoord);
+    set_texcoord(quad, 3u, kSoftQuadInsetTexcoord, kSoftQuadInsetTexcoord);
 }
 
-static float layer_envelope(
-    double scene_elapsed_seconds,
-    double fade_in_start_seconds,
-    double fade_in_end_seconds,
-    double fade_out_start_seconds,
-    double fade_out_end_seconds
-)
+static void set_overlay_quad_texcoords(CornballIntroLayerQuad *quad, float jitter_x, float jitter_y)
 {
-    float fade_in = linear_unit_ramp(scene_elapsed_seconds, fade_in_start_seconds, fade_in_end_seconds);
-    float fade_out = 1.0f - linear_unit_ramp(scene_elapsed_seconds, fade_out_start_seconds, fade_out_end_seconds);
-
-    return fminf(fade_in, fade_out);
+    set_texcoord(quad, 0u, jitter_x + 1.0f, jitter_y);
+    set_texcoord(quad, 1u, jitter_x + 1.0f, jitter_y + 1.0f);
+    set_texcoord(quad, 2u, jitter_x, jitter_y + 1.0f);
+    set_texcoord(quad, 3u, jitter_x, jitter_y);
 }
 
-static void build_soft_quad(
-    CornballIntroTextureSlot texture_slot,
-    float half_extent,
-    float translate_x,
-    float translate_y,
-    float color_r,
-    float color_g,
-    float color_b,
-    float alpha,
-    CornballIntroLayerQuad *quad
-)
+static float compute_logo_intensity(double scene_elapsed_seconds, float rand_unit)
 {
-    if (alpha <= 0.0f) {
+    return (float)(((double)rand_unit + kLogoIntensityBias) / (1.0 + scene_elapsed_seconds * kLogoIntensityDenominatorRate));
+}
+
+static float compute_overlay_intensity(double scene_elapsed_seconds, float rand_unit)
+{
+    return (float)(((double)rand_unit + kOverlayIntensityBias) / (1.0 + scene_elapsed_seconds * kOverlayIntensityDenominatorRate));
+}
+
+static void build_logotaus_soft_quad(double scene_elapsed_seconds, CornballIntroLayerQuad *quad)
+{
+    float half_width = (float)(kLogotausHalfWidthBase - scene_elapsed_seconds * kLogotausHalfWidthRate);
+
+    if (half_width < (float)kLogotausMinHalfWidth) {
         disable_layer_quad(quad);
         return;
     }
 
     fill_layer_quad(
         quad,
-        texture_slot,
-        half_extent,
-        half_extent,
-        kSoftQuadDepth,
-        translate_x,
-        translate_y,
-        color_r,
-        color_g,
-        color_b,
-        alpha,
-        kSoftQuadInsetTexcoord,
-        1.0f - kSoftQuadInsetTexcoord,
-        kSoftQuadInsetTexcoord,
-        1.0f - kSoftQuadInsetTexcoord,
-        0.0f
-    );
-}
-
-static void build_logotaus_soft_quad(double scene_elapsed_seconds, CornballIntroLayerQuad *quad)
-{
-    float intensity = layer_envelope(
-        scene_elapsed_seconds,
-        kLogotausFadeInStartSeconds,
-        kLogotausFadeInEndSeconds,
-        kLogotausFadeOutStartSeconds,
-        kLogotausFadeOutEndSeconds
-    );
-
-    build_soft_quad(
         CORNBALL_INTRO_TEXTURE_LOGOTAUS,
-        kLogotausHalfExtent,
+        half_width,
+        (float)(half_width * kLogotausHalfHeightScale),
+        kSoftQuadDepth,
         0.0f,
         0.0f,
-        kLogotausColor,
-        kLogotausColor,
-        kLogotausColor,
-        intensity * kLogotausAlphaScale,
-        quad
-    );
-}
-
-static void build_logo_soft_quad(double scene_elapsed_seconds, CornballIntroLayerQuad *quad)
-{
-    float intensity = layer_envelope(
-        scene_elapsed_seconds,
-        kLogoFadeInStartSeconds,
-        kLogoFadeInEndSeconds,
-        kLogoFadeOutStartSeconds,
-        kLogoFadeOutEndSeconds
-    );
-
-    build_soft_quad(
-        CORNBALL_INTRO_TEXTURE_LOGO,
-        kLogoHalfExtent,
-        0.0f,
-        0.2f,
+        0.5f,
+        0.5f,
+        0.5f,
         1.0f,
-        1.0f,
-        1.0f,
-        intensity * kLogoAlphaScale,
-        quad
+        (float)(scene_elapsed_seconds * kLogotausRotateRate)
     );
+    set_soft_blended_quad_texcoords(quad);
 }
 
 static void build_bipyramid_pass(
-    CornballRandom *random,
+    float rand_unit,
     double scene_elapsed_seconds,
     CornballIntroBipyramidPass *pass
 )
 {
-    (void)cornball_rand15_unit(random);
-
     memset(pass, 0, sizeof(*pass));
     pass->enabled = 1u;
     pass->front_texture_slot = CORNBALL_INTRO_TEXTURE_V1;
@@ -194,20 +142,60 @@ static void build_bipyramid_pass(
     pass->rotate_x_degrees = (float)(scene_elapsed_seconds * kBipyramidRotateXRate);
     pass->rotate_y_degrees = (float)(scene_elapsed_seconds * kBipyramidRotateYRate);
     pass->rotate_z_degrees = kBipyramidBaseRotateZ;
-    pass->color_r = 1.0f;
-    pass->color_g = 1.0f;
-    pass->color_b = 1.0f;
+    pass->color_r = (float)(kBipyramidColorRedBase + (double)rand_unit * kBipyramidColorRandScale);
+    pass->color_g = (float)(kBipyramidColorGreenBase - (double)rand_unit * kBipyramidColorRandScale);
+    pass->color_b = (float)(kBipyramidColorBlueBase + (double)rand_unit * kBipyramidColorRandScale);
     pass->color_a = 1.0f;
+}
+
+static void build_logo_soft_quad(double scene_elapsed_seconds, float rand_unit, CornballIntroLayerQuad *quad)
+{
+    double phase;
+    float intensity = compute_logo_intensity(scene_elapsed_seconds, rand_unit);
+
+    if (intensity <= (float)kLayerVisibilityThreshold) {
+        disable_layer_quad(quad);
+        return;
+    }
+
+    phase = kLogoPhaseBase + scene_elapsed_seconds * kLogoPhaseRate;
+    if (phase <= 0.0) {
+        phase = 0.0;
+    }
+    phase = fmod(phase, kLogoPhaseWrap);
+
+    fill_layer_quad(
+        quad,
+        CORNBALL_INTRO_TEXTURE_LOGO,
+        (float)(phase * kLogoHalfWidthScale),
+        (float)(phase * kLogoHalfHeightScale),
+        kSoftQuadDepth,
+        0.0f,
+        0.0f,
+        intensity,
+        intensity,
+        intensity,
+        0.0f,
+        (float)(kLogoRotateBase + scene_elapsed_seconds * kLogoRotateRate)
+    );
+    set_soft_blended_quad_texcoords(quad);
 }
 
 static void build_overlay_pass(
     CornballIntroScene *scene,
     CornballRandom *random,
     double scene_elapsed_seconds,
+    float rand_unit,
     CornballIntroLayerQuad *quad
 )
 {
+    float intensity = compute_overlay_intensity(scene_elapsed_seconds, rand_unit);
     CornballIntroTextureSlot texture_slot;
+
+    if (intensity <= (float)kLayerVisibilityThreshold) {
+        disable_layer_quad(quad);
+        return;
+    }
 
     if ((scene->overlay_state.call_counter & kOverlayReseedMask) == 0u) {
         scene->overlay_state.jitter_x = cornball_rand15_unit(random);
@@ -216,7 +204,7 @@ static void build_overlay_pass(
 
     scene->overlay_state.call_counter += 1u;
 
-    texture_slot = (scene_elapsed_seconds < kTxt2OpeningPhaseSeconds)
+    texture_slot = (scene_elapsed_seconds <= kTxt2LastInclusiveSeconds)
         ? CORNBALL_INTRO_TEXTURE_TXT2
         : CORNBALL_INTRO_TEXTURE_TXT1;
 
@@ -228,16 +216,13 @@ static void build_overlay_pass(
         kOverlayDepth,
         0.0f,
         0.0f,
-        kOverlayTint,
-        kOverlayTint,
-        kOverlayTint,
-        1.0f,
-        scene->overlay_state.jitter_x - 1.0f,
-        scene->overlay_state.jitter_x,
-        scene->overlay_state.jitter_y - 1.0f,
-        scene->overlay_state.jitter_y,
+        intensity,
+        intensity,
+        intensity,
+        intensity,
         0.0f
     );
+    set_overlay_quad_texcoords(quad, scene->overlay_state.jitter_x, scene->overlay_state.jitter_y);
 }
 
 void cornball_intro_scene_clear(CornballIntroScene *scene)
@@ -261,10 +246,14 @@ void cornball_intro_scene_step_frame(
     CornballIntroFrame *frame
 )
 {
+    float rand_unit;
+
     memset(frame, 0, sizeof(*frame));
 
-    build_bipyramid_pass(random, scene_elapsed_seconds, &frame->bipyramid);
+    rand_unit = cornball_rand15_unit(random);
+
+    build_bipyramid_pass(rand_unit, scene_elapsed_seconds, &frame->bipyramid);
     build_logotaus_soft_quad(scene_elapsed_seconds, &frame->logotaus_soft_quad);
-    build_logo_soft_quad(scene_elapsed_seconds, &frame->logo_soft_quad);
-    build_overlay_pass(scene, random, scene_elapsed_seconds, &frame->overlay_quad);
+    build_logo_soft_quad(scene_elapsed_seconds, rand_unit, &frame->logo_soft_quad);
+    build_overlay_pass(scene, random, scene_elapsed_seconds, rand_unit, &frame->overlay_quad);
 }

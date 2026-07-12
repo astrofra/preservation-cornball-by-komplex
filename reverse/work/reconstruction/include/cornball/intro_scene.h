@@ -15,6 +15,11 @@ typedef enum CornballIntroTextureSlot {
     CORNBALL_INTRO_TEXTURE_LOGOTAUS = 6
 } CornballIntroTextureSlot;
 
+typedef struct CornballIntroTexcoord {
+    float u;
+    float v;
+} CornballIntroTexcoord;
+
 typedef struct CornballIntroLayerQuad {
     uint32_t enabled;
     CornballIntroTextureSlot texture_slot;
@@ -27,10 +32,7 @@ typedef struct CornballIntroLayerQuad {
     float color_g;
     float color_b;
     float color_a;
-    float texcoord_min_u;
-    float texcoord_max_u;
-    float texcoord_min_v;
-    float texcoord_max_v;
+    CornballIntroTexcoord texcoords[4];
     float rotation_degrees;
 } CornballIntroLayerQuad;
 

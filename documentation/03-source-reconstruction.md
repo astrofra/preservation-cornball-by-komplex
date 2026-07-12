@@ -114,8 +114,12 @@ The current C reconstruction models these points directly from the binary:
 - `LOGOTAUS.TGA` soft-blended quad with inset `0.01 .. 0.99` texture coordinates
 - `GL_ONE, GL_ONE_MINUS_SRC_COLOR` particle blending for the `fla` texture pass
 - `TXT1.TGA` jitter overlay using a fixed centered quad and a pseudo-randomized texture window
-- `intro` early-stage composition using the original `65 / 1 / 90` perspective envelope, both `V1` and `V2` bipyramid halves, timed `LOGOTAUS` / `LOGO` soft quads, and a `TXT2` to `TXT1` jitter overlay switch
-- wrapped texture sampling for the overlay helpers, which is necessary for the `u/v = jitter - 1 .. jitter` window to behave like a scrolling wrapped sample instead of a clamped crop
+- `intro` early-stage composition using the original `65 / 1 / 90` perspective envelope, both `V1` and `V2` bipyramid halves, the recovered caller-side `LOGOTAUS` / `LOGO` transforms and timing, and the original `TXT2` to `TXT1` overlay branch
+- intro bipyramid tint `= (0.3 + 0.21r, 0.31 - 0.21r, 0.1 + 0.21r, 1.0)` with `r = rand15 / 32768.0`
+- intro `LOGOTAUS` half-size `= 3.2 - 0.02 * t`, rotation `= 9 * t`, draw only while half-size `>= 1.0`
+- intro `LOGO` intensity `= (r + 3.0) / (1.0 + 0.5 * t)`, rotation `= 180 + 3 * t`, size phase `= fmod(max(0, 0.3 + 0.06 * t), 2.0)`
+- intro overlay intensity `= (r + 1.0) / (1.0 + 0.8 * t)`, with `TXT2` still selected at exactly `t = 5.0 s`
+- wrapped texture sampling for the overlay helpers, which is necessary for the helper-owned `u/v` window to behave like a scrolling wrapped sample instead of a clamped crop
 - `kaar` frame gate `= rand15 * 0.0000305185094759972`
 - `kaar` main branch only when the gate is `<= 0.25`
 - fogged `KAAR128.TGA` tube-shell pass with additive blending
@@ -199,6 +203,6 @@ The fixed-step choice is deliberate: the original `fla` routine is frame-based a
 
 Use this buildable `fla` / `intro` base as the template for the next lift:
 
-1. recover the exact caller-side transforms, scales, and timing for the `intro/logo` soft-quad stages so the current buildable slice becomes visually faithful
+1. compare the exact intro caller lift against the cropped VHS reference and resolve any remaining asset-orientation or time-zero mismatch
 2. lift `surf` next, since it reuses the same tube-shell helper but changes the overlay reseed mask and texture usage
 3. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added

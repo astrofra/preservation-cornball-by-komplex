@@ -5,7 +5,7 @@ This directory contains hand-written source reconstruction work derived from the
 Current scope:
 
 - exact PRNG reconstruction for `lcg_rand15`
-- opening multi-stage slice of the `intro/logo` family using `V1`, `V2`, `TXT2`, `LOGOTAUS`, and `LOGO`
+- exact caller-side lift of the opening `intro/logo` family using `V1`, `V2`, `TXT2`, `TXT1`, `LOGOTAUS`, and `LOGO`
 - first C99 lift of `render_scene_fla_particle_family`
 - shared `fla` layering helpers for the rotating `LOGOTAUS` quad and the `TXT1` jitter overlay
 - first C99 lift of `render_scene_kaar_family`, including its fogged tube-shell pass and centered `TXT1` quad

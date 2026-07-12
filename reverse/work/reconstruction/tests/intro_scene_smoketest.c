@@ -48,46 +48,83 @@ int main(void)
     assert_close("bipyramid.rotate_x", frame.bipyramid.rotate_x_degrees, 0.0f, 0.000001f);
     assert_close("bipyramid.rotate_y", frame.bipyramid.rotate_y_degrees, 0.0f, 0.000001f);
     assert_close("bipyramid.rotate_z", frame.bipyramid.rotate_z_degrees, 90.0f, 0.000001f);
-    assert_close("bipyramid.color_r", frame.bipyramid.color_r, 1.0f, 0.000001f);
-    assert_close("bipyramid.color_g", frame.bipyramid.color_g, 1.0f, 0.000001f);
-    assert_close("bipyramid.color_b", frame.bipyramid.color_b, 1.0f, 0.000001f);
-    assert_equal_u32("logotaus.enabled", frame.logotaus_soft_quad.enabled, 0u);
-    assert_equal_u32("logo.enabled", frame.logo_soft_quad.enabled, 0u);
+    assert_close("bipyramid.color_r", frame.bipyramid.color_r, 0.300262749f, 0.000001f);
+    assert_close("bipyramid.color_g", frame.bipyramid.color_g, 0.309737235f, 0.000001f);
+    assert_close("bipyramid.color_b", frame.bipyramid.color_b, 0.100262754f, 0.000001f);
+    assert_equal_u32("logotaus.enabled", frame.logotaus_soft_quad.enabled, 1u);
+    assert_equal_u32("logotaus.texture_slot", frame.logotaus_soft_quad.texture_slot, CORNBALL_INTRO_TEXTURE_LOGOTAUS);
+    assert_close("logotaus.half_width", frame.logotaus_soft_quad.half_width, 3.2f, 0.000001f);
+    assert_close("logotaus.half_height", frame.logotaus_soft_quad.half_height, 2.56f, 0.000001f);
+    assert_close("logotaus.color_r", frame.logotaus_soft_quad.color_r, 0.5f, 0.000001f);
+    assert_close("logotaus.color_a", frame.logotaus_soft_quad.color_a, 1.0f, 0.000001f);
+    assert_close("logotaus.uv0.u", frame.logotaus_soft_quad.texcoords[0].u, 0.99f, 0.000001f);
+    assert_close("logotaus.uv1.v", frame.logotaus_soft_quad.texcoords[1].v, 1.0f, 0.000001f);
+    assert_close("logotaus.uv2.v", frame.logotaus_soft_quad.texcoords[2].v, 0.99f, 0.000001f);
+    assert_equal_u32("logo.enabled", frame.logo_soft_quad.enabled, 1u);
+    assert_equal_u32("logo.texture_slot", frame.logo_soft_quad.texture_slot, CORNBALL_INTRO_TEXTURE_LOGO);
+    assert_close("logo.half_width", frame.logo_soft_quad.half_width, 0.6f, 0.000001f);
+    assert_close("logo.half_height", frame.logo_soft_quad.half_height, 0.15f, 0.000001f);
+    assert_close("logo.color_r", frame.logo_soft_quad.color_r, 3.001251221f, 0.000001f);
+    assert_close("logo.color_a", frame.logo_soft_quad.color_a, 0.0f, 0.000001f);
+    assert_close("logo.rotation", frame.logo_soft_quad.rotation_degrees, 180.0f, 0.000001f);
 
     assert_equal_u32("overlay.enabled", frame.overlay_quad.enabled, 1u);
     assert_equal_u32("overlay.texture_slot", frame.overlay_quad.texture_slot, CORNBALL_INTRO_TEXTURE_TXT2);
     assert_equal_u32("overlay.call_counter", scene.overlay_state.call_counter, 1u);
     assert_close("overlay.jitter_x", scene.overlay_state.jitter_x, 0.563568115f, 0.000001f);
     assert_close("overlay.jitter_y", scene.overlay_state.jitter_y, 0.193298340f, 0.000001f);
-    assert_close("overlay.min_u", frame.overlay_quad.texcoord_min_u, -0.436431885f, 0.000001f);
-    assert_close("overlay.max_u", frame.overlay_quad.texcoord_max_u, 0.563568115f, 0.000001f);
-    assert_close("overlay.min_v", frame.overlay_quad.texcoord_min_v, -0.806701660f, 0.000001f);
-    assert_close("overlay.max_v", frame.overlay_quad.texcoord_max_v, 0.193298340f, 0.000001f);
-    assert_close("overlay.tint", frame.overlay_quad.color_r, 0.85f, 0.000001f);
+    assert_close("overlay.uv0.u", frame.overlay_quad.texcoords[0].u, 1.563568115f, 0.000001f);
+    assert_close("overlay.uv0.v", frame.overlay_quad.texcoords[0].v, 0.193298340f, 0.000001f);
+    assert_close("overlay.uv2.u", frame.overlay_quad.texcoords[2].u, 0.563568115f, 0.000001f);
+    assert_close("overlay.uv2.v", frame.overlay_quad.texcoords[2].v, 1.193298340f, 0.000001f);
+    assert_close("overlay.color", frame.overlay_quad.color_r, 1.001251221f, 0.000001f);
+    assert_close("overlay.alpha", frame.overlay_quad.color_a, 1.001251221f, 0.000001f);
 
     cornball_intro_scene_step_frame(&scene, &random, 2.5, &frame);
 
     assert_equal_u32("logotaus.enabled@2.5s", frame.logotaus_soft_quad.enabled, 1u);
     assert_equal_u32("logotaus.texture_slot@2.5s", frame.logotaus_soft_quad.texture_slot, CORNBALL_INTRO_TEXTURE_LOGOTAUS);
-    assert_close("logotaus.half_width@2.5s", frame.logotaus_soft_quad.half_width, 1.45f, 0.000001f);
-    assert_close("logotaus.alpha@2.5s", frame.logotaus_soft_quad.color_a, 0.55f, 0.000001f);
+    assert_close("logotaus.half_width@2.5s", frame.logotaus_soft_quad.half_width, 3.15f, 0.000001f);
+    assert_close("logotaus.half_height@2.5s", frame.logotaus_soft_quad.half_height, 2.52f, 0.000001f);
+    assert_close("logotaus.rotation@2.5s", frame.logotaus_soft_quad.rotation_degrees, 22.5f, 0.000001f);
     assert_equal_u32("logo.enabled@2.5s", frame.logo_soft_quad.enabled, 1u);
     assert_equal_u32("logo.texture_slot@2.5s", frame.logo_soft_quad.texture_slot, CORNBALL_INTRO_TEXTURE_LOGO);
-    assert_close("logo.half_width@2.5s", frame.logo_soft_quad.half_width, 1.05f, 0.000001f);
-    assert_close("logo.alpha@2.5s", frame.logo_soft_quad.color_a, 0.65f, 0.000001f);
-    assert_close("logo.translate_y@2.5s", frame.logo_soft_quad.translate_y, 0.2f, 0.000001f);
+    assert_close("bipyramid.rotate_y@2.5s", frame.bipyramid.rotate_y_degrees, 5.5f, 0.000001f);
+    assert_close("bipyramid.rotate_x@2.5s", frame.bipyramid.rotate_x_degrees, 25.0f, 0.000001f);
+    assert_close("bipyramid.color_r@2.5s", frame.bipyramid.color_r, 0.469830334f, 0.000001f);
+    assert_close("bipyramid.color_g@2.5s", frame.bipyramid.color_g, 0.140169680f, 0.000001f);
+    assert_close("bipyramid.color_b@2.5s", frame.bipyramid.color_b, 0.269830316f, 0.000001f);
+    assert_close("logo.half_width@2.5s", frame.logo_soft_quad.half_width, 0.9f, 0.000001f);
+    assert_close("logo.half_height@2.5s", frame.logo_soft_quad.half_height, 0.225f, 0.000001f);
+    assert_close("logo.color_r@2.5s", frame.logo_soft_quad.color_r, 1.692762613f, 0.000001f);
+    assert_close("logo.rotation@2.5s", frame.logo_soft_quad.rotation_degrees, 187.5f, 0.000001f);
+    assert_close("logo.alpha@2.5s", frame.logo_soft_quad.color_a, 0.0f, 0.000001f);
     assert_equal_u32("overlay.texture_slot@2.5s", frame.overlay_quad.texture_slot, CORNBALL_INTRO_TEXTURE_TXT2);
     assert_equal_u32("overlay.call_counter@2.5s", scene.overlay_state.call_counter, 2u);
+    assert_close("overlay.color@2.5s", frame.overlay_quad.color_r, 0.602905273f, 0.000001f);
+    assert_close("overlay.jitter_x@2.5s", scene.overlay_state.jitter_x, 0.563568115f, 0.000001f);
 
     cornball_intro_scene_step_frame(&scene, &random, 5.0, &frame);
 
-    assert_equal_u32("overlay.texture_slot@5s", frame.overlay_quad.texture_slot, CORNBALL_INTRO_TEXTURE_TXT1);
+    assert_equal_u32("overlay.texture_slot@5s", frame.overlay_quad.texture_slot, CORNBALL_INTRO_TEXTURE_TXT2);
     assert_equal_u32("overlay.call_counter@5s", scene.overlay_state.call_counter, 3u);
     assert_close("overlay.jitter_x@5s", scene.overlay_state.jitter_x, 0.479858398f, 0.000001f);
+    assert_close("overlay.jitter_y@5s", scene.overlay_state.jitter_y, 0.350280762f, 0.000001f);
+    assert_close("overlay.color@5s", frame.overlay_quad.color_r, 0.316998303f, 0.000001f);
     assert_close("overlay.rotate_y@5s", frame.bipyramid.rotate_y_degrees, 11.0f, 0.000001f);
     assert_close("overlay.rotate_x@5s", frame.bipyramid.rotate_x_degrees, 50.0f, 0.000001f);
-    assert_equal_u32("logotaus.enabled@5s", frame.logotaus_soft_quad.enabled, 0u);
-    assert_equal_u32("logo.enabled@5s", frame.logo_soft_quad.enabled, 0u);
+    assert_close("bipyramid.color_r@5s", frame.bipyramid.color_r, 0.422848195f, 0.000001f);
+    assert_close("logotaus.half_width@5s", frame.logotaus_soft_quad.half_width, 3.1f, 0.000001f);
+    assert_close("logo.half_width@5s", frame.logo_soft_quad.half_width, 1.2f, 0.000001f);
+    assert_close("logo.half_height@5s", frame.logo_soft_quad.half_height, 0.3f, 0.000001f);
+    assert_close("logo.color_r@5s", frame.logo_soft_quad.color_r, 1.024283290f, 0.000001f);
+    assert_close("logo.rotation@5s", frame.logo_soft_quad.rotation_degrees, 195.0f, 0.000001f);
+
+    cornball_intro_scene_step_frame(&scene, &random, 5.01, &frame);
+
+    assert_equal_u32("overlay.texture_slot@5.01s", frame.overlay_quad.texture_slot, CORNBALL_INTRO_TEXTURE_TXT1);
+    assert_equal_u32("overlay.call_counter@5.01s", scene.overlay_state.call_counter, 4u);
+    assert_close("overlay.jitter_x@5.01s", scene.overlay_state.jitter_x, 0.479858398f, 0.000001f);
 
     return 0;
 }

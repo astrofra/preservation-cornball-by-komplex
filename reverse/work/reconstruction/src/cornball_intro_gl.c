@@ -245,16 +245,16 @@ static void apply_projection(const CornballIntroGlRenderer *renderer)
 
 static void draw_textured_quad_uv(const CornballIntroLayerQuad *quad)
 {
-    glTexCoord2f(quad->texcoord_max_u, quad->texcoord_min_v);
+    glTexCoord2f(quad->texcoords[0].u, quad->texcoords[0].v);
     glVertex3f(quad->half_width, -quad->half_height, quad->depth_z);
 
-    glTexCoord2f(quad->texcoord_max_u, quad->texcoord_max_v);
+    glTexCoord2f(quad->texcoords[1].u, quad->texcoords[1].v);
     glVertex3f(quad->half_width, quad->half_height, quad->depth_z);
 
-    glTexCoord2f(quad->texcoord_min_u, quad->texcoord_max_v);
+    glTexCoord2f(quad->texcoords[2].u, quad->texcoords[2].v);
     glVertex3f(-quad->half_width, quad->half_height, quad->depth_z);
 
-    glTexCoord2f(quad->texcoord_min_u, quad->texcoord_min_v);
+    glTexCoord2f(quad->texcoords[3].u, quad->texcoords[3].v);
     glVertex3f(-quad->half_width, -quad->half_height, quad->depth_z);
 }
 
@@ -282,7 +282,7 @@ static void draw_soft_layer_quad(
     }
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     draw_layer_quad(quad);
 }
 

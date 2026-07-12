@@ -3,6 +3,11 @@
 Date: 2026-07-12
 Status: implemented, visually incomplete
 
+Superseded note:
+
+- the caller-side timings and transforms in this step were still heuristic when written
+- the exact binary-derived formulas are now documented in [08-intro-caller-recovery.md](/C:/works/projects/preservation-cornball-by-komplex/documentation/08-intro-caller-recovery.md)
+
 ## Goal
 
 Extend the earlier `intro/logo` first-screen subset so the next visible opening stage is also buildable:
