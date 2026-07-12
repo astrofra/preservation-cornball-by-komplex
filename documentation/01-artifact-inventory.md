@@ -82,3 +82,13 @@ All `20` baseline artifacts matched their original counterparts by SHA-256.
 ## Next Step
 
 Proceed with static reverse engineering from the read-only baseline copy and store all generated material under `reverse/work/`.
+
+## Addendum - Supplementary Video Capture
+
+Date: 2026-07-12
+
+A supplementary MPEG capture was identified later at `original/video/TG98_3DFX_Complex_PlanetCornball.mpeg`.
+
+- It was not part of the original Step 1 hash baseline.
+- It is treated as an external reference artifact rather than part of the release payload in `original/cornball/`.
+- Its crop-box analysis, timing convention, and derived PNG sequence are documented in [documentation/04-video-reference.md](04-video-reference.md).
