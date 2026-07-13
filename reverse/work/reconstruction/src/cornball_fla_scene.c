@@ -113,10 +113,10 @@ static void cornball_fla_scene_build_helper_layers(
         scene->overlay_state.tint,
         scene->overlay_state.tint * kOverlayBlueScale,
         1.0f,
-        scene->overlay_state.jitter_x - 1.0f,
         scene->overlay_state.jitter_x,
-        scene->overlay_state.jitter_y - 1.0f,
-        scene->overlay_state.jitter_y
+        scene->overlay_state.jitter_x + 1.0f,
+        scene->overlay_state.jitter_y,
+        scene->overlay_state.jitter_y + 1.0f
     );
 }
 

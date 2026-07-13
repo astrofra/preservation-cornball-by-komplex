@@ -84,10 +84,10 @@ int main(void)
     assert_close("step.overlay.tint", scene.overlay_state.tint, 0.001251221f, 0.000001f);
     assert_close("step.overlay.jitter_x", scene.overlay_state.jitter_x, 0.386169434f, 0.000001f);
     assert_close("step.overlay.jitter_y", scene.overlay_state.jitter_y, 0.116638184f, 0.000001f);
-    assert_close("step.overlay.min_u", frame.txt1_overlay_quad.texcoord_min_u, -0.613830566f, 0.000001f);
-    assert_close("step.overlay.max_u", frame.txt1_overlay_quad.texcoord_max_u, 0.386169434f, 0.000001f);
-    assert_close("step.overlay.min_v", frame.txt1_overlay_quad.texcoord_min_v, -0.883361816f, 0.000001f);
-    assert_close("step.overlay.max_v", frame.txt1_overlay_quad.texcoord_max_v, 0.116638184f, 0.000001f);
+    assert_close("step.overlay.min_u", frame.txt1_overlay_quad.texcoord_min_u, 0.386169434f, 0.000001f);
+    assert_close("step.overlay.max_u", frame.txt1_overlay_quad.texcoord_max_u, 1.386169434f, 0.000001f);
+    assert_close("step.overlay.min_v", frame.txt1_overlay_quad.texcoord_min_v, 0.116638184f, 0.000001f);
+    assert_close("step.overlay.max_v", frame.txt1_overlay_quad.texcoord_max_v, 1.116638184f, 0.000001f);
     assert_close("step.overlay.blue", frame.txt1_overlay_quad.color_b, 0.001000977f, 0.000001f);
     assert_close("step.frame.p0.grayscale", frame.quads[0].grayscale, 1.690704346f, 0.000001f);
 

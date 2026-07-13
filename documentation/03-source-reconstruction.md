@@ -134,12 +134,12 @@ The current C reconstruction models these points directly from the binary:
 - `kaar` main branch only when the gate is `<= 0.25`
 - fogged `KAAR128.TGA` tube-shell pass with additive blending
 - `kaar` uses the same global `65 / 1 / 90` perspective camera as the original demo bootstrap, not the earlier orthographic approximation
-- tube-shell transform `x = cos(t * 0.2) * 190`, `y = cos(t * 0.3) * 3`
+- tube-shell transform `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 190`
 - tube-shell rotation `rx = sin(t * 0.3) * 190`, `ry = t * 2`, `rz = t`
 - tube-shell texture phase `= t * 0.1`, with the opposite side sampled at `phase + 3.0`
 - centered `TXT1.TGA` quad rotating at `t * 11` with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
 - `surf` fogged `SURF128.TGA` tube-shell pass with the global `65 / 1 / 90` perspective camera still active
-- `surf` tube-shell transform `x = cos(t * 0.2) * 3`, `y = cos(t * 0.3) * 3`, `rz_pre = t * 3`, `rx = sin(t * 0.5) * 30`, `rz_post = t * 32`, `phase = -0.3 * t`
+- `surf` tube-shell transform `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 3`, `rz_pre = t * 3`, `rx = sin(t * 0.5) * 30`, `rz_post = t * 32`, `phase = -0.3 * t`
 - `surf` additive `FLA.TGA` stack of `32` quads, with base `z = t * 8` and per-layer step `-10`
 - `surf` rotating `SURF128.TGA` foreground quad at `z = -1`, `u/v = 0 .. 2`, rotation `= t * 11`, blend `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
 - `surf` `TXT1.TGA` jitter overlay with reseed mask `0`, so it consumes two fresh random samples every frame
@@ -203,16 +203,17 @@ It currently:
 
 - creates a raw Win32 window and WGL context
 - discovers the extracted demo assets under `reverse/baseline/cornball` or `original/cornball`
+- treats the shipped `32bpp` TGAs with descriptor `0x00` as color-only data and derives alpha from the strongest RGB channel instead of trusting the unused fourth byte
 - uploads `FLA.TGA`, `LOGOTAUS.TGA`, and `TXT1.TGA`
 - uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
 - uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
-- runs the chained reconstructed sequence with a fixed `60 Hz` scene-frame cadence
+- runs the chained reconstructed sequence with a default fixed `60 Hz` scene-frame cadence, now overrideable with `--fixed-step-hz` during synthetic capture analysis
 - resets scene-local time at each original scene-slot transition while keeping the global PRNG and family-owned state alive
 - in Win32/x86 builds, can start the original `AAB.XM` replay through the bundled `MIDAS06.DLL`
-- when that music path is active, follows the true tracker position for scene dispatch and leaves unreconstructed slots as black placeholders
+- when that music path is active, follows the true tracker position for scene dispatch and still leaves unreconstructed scene slot `9` as black
 - supports `--hidden --frames <n>` for automated smoke runs
-- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
+- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--fixed-step-hz`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
 
 Current comparison-oriented default:
 

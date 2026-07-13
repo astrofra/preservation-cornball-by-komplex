@@ -76,8 +76,8 @@ int main(void)
 
     assert_close("step1.burned_rand_unit", frame.burned_rand_unit, 0.808715820f, 0.000001f);
     assert_equal_u32("step1.overlay.call_counter", scene.overlay_state.call_counter, 2u);
-    assert_close("step1.translate_x", frame.tube_shell.translate_x, 2.940199852f, 0.000001f);
-    assert_close("step1.translate_y", frame.tube_shell.translate_y, 2.866009474f, 0.000001f);
+    assert_close("step1.translate_x", frame.tube_shell.translate_x, 2.866009474f, 0.000001f);
+    assert_close("step1.translate_y", frame.tube_shell.translate_y, 2.940199852f, 0.000001f);
     assert_close("step1.rotate_z_pre", frame.tube_shell.rotate_z_pre_degrees, 3.0f, 0.000001f);
     assert_close("step1.rotate_x", frame.tube_shell.rotate_x_degrees, 14.382766724f, 0.000001f);
     assert_close("step1.rotate_z_post", frame.tube_shell.rotate_z_post_degrees, 32.0f, 0.000001f);

@@ -55,6 +55,8 @@ static int load_file_tga_rgba(
     unsigned short width;
     unsigned short height;
     unsigned char pixel_depth;
+    unsigned char image_descriptor;
+    unsigned char alpha_bits;
 
     *pixels_out = NULL;
     *width_out = 0;
@@ -78,6 +80,8 @@ static int load_file_tga_rgba(
     width = (unsigned short)(header[12] | (header[13] << 8));
     height = (unsigned short)(header[14] | (header[15] << 8));
     pixel_depth = header[16];
+    image_descriptor = header[17];
+    alpha_bits = (unsigned char)(image_descriptor & 0x0f);
 
     if ((image_type != 2u) || (color_map_type != 0u)) {
         fclose(file);
@@ -141,10 +145,29 @@ static int load_file_tga_rgba(
         size_t src = i * pixel_size;
         size_t dst = i * 4u;
 
-        rgba_pixels[dst + 0u] = source_pixels[src + 2u];
-        rgba_pixels[dst + 1u] = source_pixels[src + 1u];
-        rgba_pixels[dst + 2u] = source_pixels[src + 0u];
-        rgba_pixels[dst + 3u] = (pixel_size == 4u) ? source_pixels[src + 3u] : 255u;
+        unsigned char red = source_pixels[src + 2u];
+        unsigned char green = source_pixels[src + 1u];
+        unsigned char blue = source_pixels[src + 0u];
+        unsigned char alpha = 255u;
+
+        if (pixel_size == 4u) {
+            if (alpha_bits != 0u) {
+                alpha = source_pixels[src + 3u];
+            } else {
+                alpha = red;
+                if (green > alpha) {
+                    alpha = green;
+                }
+                if (blue > alpha) {
+                    alpha = blue;
+                }
+            }
+        }
+
+        rgba_pixels[dst + 0u] = red;
+        rgba_pixels[dst + 1u] = green;
+        rgba_pixels[dst + 2u] = blue;
+        rgba_pixels[dst + 3u] = alpha;
     }
 
     free(source_pixels);

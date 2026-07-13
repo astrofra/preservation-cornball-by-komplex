@@ -52,8 +52,8 @@ The scene configures:
 Then it binds `SURF128` and draws the cached tube shell with additive blending:
 
 - blend `= GL_ONE, GL_ONE`
-- translate `x = cos(t * 0.2) * 3`
-- translate `y = cos(t * 0.3) * 3`
+- translate `x = cos(t * 0.3) * 3`
+- translate `y = cos(t * 0.2) * 3`
 - translate `z = 0`
 - rotate `z_pre = t * 3`
 - rotate `x = sin(t * 0.5) * 30`

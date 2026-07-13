@@ -60,13 +60,14 @@ Optional replay flags:
 - `--seed <lcg-seed>` to explore deterministic overlay alignment
 - `--demo-seconds <seconds>` to warm the chained replay before the first presented frame
 - `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic replay
+- `--fixed-step-hz <hz>` to vary the deterministic state-update cadence during analysis captures
 - `--capture-dir <path> --capture-every <n>` to dump back-buffer frames as `TGA`
 
 Current music behavior:
 
 - in Win32/x86 builds, visible replay runs try to start the original `AAB.XM` soundtrack through the bundled `MIDAS06.DLL`
 - when that succeeds, scene selection follows the real tracker position instead of the synthetic compressed timeline
-- unreconstructed scene slots `2`, `4`, and `9` are shown as black placeholders while music keeps running
+- unreconstructed scene slot `9` is still shown as black while music keeps running
 - x64 builds stay on the synthetic silent path because a 64-bit process cannot load the shipped 32-bit `MIDAS06.DLL`
 - in auto mode, that x64 fallback is silent; use `--music` if you want a hard failure instead
 

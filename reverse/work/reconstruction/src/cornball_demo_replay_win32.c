@@ -16,15 +16,18 @@
 #include "cornball/kaar_gl.h"
 #include "cornball/kaar_scene.h"
 #include "cornball/random.h"
+#include "cornball/s_pair_gl.h"
+#include "cornball/s_pair_scene.h"
 #include "cornball/surf_gl.h"
 #include "cornball/surf_scene.h"
 
 typedef enum ReplayFamily {
     REPLAY_FAMILY_INTRO = 0,
     REPLAY_FAMILY_KAAR = 1,
-    REPLAY_FAMILY_SURF = 2,
-    REPLAY_FAMILY_FLA = 3,
-    REPLAY_FAMILY_PLACEHOLDER = 4
+    REPLAY_FAMILY_S_PAIR = 2,
+    REPLAY_FAMILY_SURF = 3,
+    REPLAY_FAMILY_FLA = 4,
+    REPLAY_FAMILY_PLACEHOLDER = 5
 } ReplayFamily;
 
 typedef enum ReplayMusicMode {
@@ -57,8 +60,10 @@ typedef struct ReplayOptions {
     int window_width;
     int window_height;
     int music_mode;
+    int log_scene_transitions;
     double demo_seconds;
     double position_seconds;
+    double fixed_step_hz;
 } ReplayOptions;
 
 typedef struct MidasPlayStatus {
@@ -130,6 +135,9 @@ typedef struct ReplayApp {
     CornballKaarScene kaar_scene;
     CornballKaarFrame kaar_frame;
     CornballKaarGlRenderer kaar_renderer;
+    CornballSPairScene s_pair_scene;
+    CornballSPairFrame s_pair_frame;
+    CornballSPairGlRenderer s_pair_renderer;
     CornballSurfScene surf_scene;
     CornballSurfFrame surf_frame;
     CornballSurfGlRenderer surf_renderer;
@@ -138,7 +146,7 @@ typedef struct ReplayApp {
     CornballFlaGlRenderer fla_renderer;
 } ReplayApp;
 
-static const double kSimulationStepSeconds = 1.0 / 60.0;
+static const double kDefaultFixedStepHz = 60.0;
 static const double kDefaultPositionSeconds = 1.0;
 static const int kDefaultWindowWidth = 640;
 static const int kDefaultWindowHeight = 400;
@@ -147,7 +155,9 @@ static const unsigned int kInvalidSceneIndex = UINT_MAX;
 static const ReplaySegment kReplaySegments[] = {
     {0u, REPLAY_FAMILY_INTRO, 12.0},
     {1u, REPLAY_FAMILY_KAAR, 6.0},
+    {2u, REPLAY_FAMILY_S_PAIR, 4.0},
     {3u, REPLAY_FAMILY_SURF, 3.0},
+    {4u, REPLAY_FAMILY_S_PAIR, 2.0},
     {5u, REPLAY_FAMILY_FLA, 3.0},
     {6u, REPLAY_FAMILY_SURF, 4.0},
     {7u, REPLAY_FAMILY_INTRO, 1.0},
@@ -170,9 +180,9 @@ static const unsigned int kOriginalSceneThresholds[] = {
 static const ReplayFamily kOriginalSceneFamilies[] = {
     REPLAY_FAMILY_INTRO,
     REPLAY_FAMILY_KAAR,
-    REPLAY_FAMILY_PLACEHOLDER,
+    REPLAY_FAMILY_S_PAIR,
     REPLAY_FAMILY_SURF,
-    REPLAY_FAMILY_PLACEHOLDER,
+    REPLAY_FAMILY_S_PAIR,
     REPLAY_FAMILY_FLA,
     REPLAY_FAMILY_SURF,
     REPLAY_FAMILY_INTRO,
@@ -233,6 +243,8 @@ static int asset_root_looks_valid(const char *root)
         "LOGO.TGA",
         "LOGOTAUS.TGA",
         "KAAR128.TGA",
+        "S1.TGA",
+        "S2.TGA",
         "SURF128.TGA",
         "FLA.TGA"
     };
@@ -285,6 +297,27 @@ static double replay_total_positions(void)
 static double replay_total_seconds(double position_seconds)
 {
     return replay_total_positions() * position_seconds;
+}
+
+static void log_scene_transition(
+    const ReplayApp *app,
+    const char *clock_label,
+    unsigned int scene_index,
+    unsigned int position
+)
+{
+    if (app->options.log_scene_transitions == 0) {
+        return;
+    }
+
+    printf(
+        "[scene-transition] clock=%s elapsed=%0.3f scene=%u position=%u\n",
+        clock_label,
+        app->elapsed_seconds,
+        scene_index,
+        position
+    );
+    fflush(stdout);
 }
 
 static ReplaySelection replay_select(double elapsed_seconds, double position_seconds)
@@ -349,6 +382,15 @@ static ReplaySelection replay_select_from_music_position(unsigned int position)
     return selection;
 }
 
+static double replay_step_seconds(const ReplayOptions *options)
+{
+    if ((options == NULL) || (options->fixed_step_hz <= 0.0)) {
+        return 1.0 / kDefaultFixedStepHz;
+    }
+
+    return 1.0 / options->fixed_step_hz;
+}
+
 static int parse_options(int argc, char **argv, ReplayOptions *options)
 {
     int i;
@@ -359,6 +401,7 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
     options->window_height = kDefaultWindowHeight;
     options->music_mode = REPLAY_MUSIC_MODE_AUTO;
     options->position_seconds = kDefaultPositionSeconds;
+    options->fixed_step_hz = kDefaultFixedStepHz;
 
     for (i = 1; i < argc; ++i) {
         if ((strcmp(argv[i], "--asset-root") == 0) && ((i + 1) < argc)) {
@@ -389,10 +432,15 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
         } else if ((strcmp(argv[i], "--position-seconds") == 0) && ((i + 1) < argc)) {
             options->position_seconds = strtod(argv[i + 1], NULL);
             ++i;
+        } else if ((strcmp(argv[i], "--fixed-step-hz") == 0) && ((i + 1) < argc)) {
+            options->fixed_step_hz = strtod(argv[i + 1], NULL);
+            ++i;
         } else if (strcmp(argv[i], "--music") == 0) {
             options->music_mode = REPLAY_MUSIC_MODE_ON;
         } else if (strcmp(argv[i], "--no-music") == 0) {
             options->music_mode = REPLAY_MUSIC_MODE_OFF;
+        } else if (strcmp(argv[i], "--log-scene-transitions") == 0) {
+            options->log_scene_transitions = 1;
         } else if (strcmp(argv[i], "--hidden") == 0) {
             options->hidden = 1;
         } else {
@@ -419,6 +467,10 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
 
     if (options->position_seconds <= 0.0) {
         options->position_seconds = kDefaultPositionSeconds;
+    }
+
+    if (options->fixed_step_hz <= 0.0) {
+        options->fixed_step_hz = kDefaultFixedStepHz;
     }
 
     return 1;
@@ -727,6 +779,7 @@ static void update_music_selection(ReplayApp *app)
     if ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index)) {
         app->scene_start_seconds = app->elapsed_seconds;
         app->active_scene_index = next_selection.original_scene_index;
+        log_scene_transition(app, "music", next_selection.original_scene_index, app->music_status.position);
     }
 
     next_selection.local_seconds = app->elapsed_seconds - app->scene_start_seconds;
@@ -795,7 +848,19 @@ static int capture_current_frame(ReplayApp *app, const char *prefix)
 
 static void step_current_segment(ReplayApp *app)
 {
-    app->selection = replay_select(app->elapsed_seconds, app->options.position_seconds);
+    ReplaySelection next_selection;
+
+    next_selection = replay_select(app->elapsed_seconds, app->options.position_seconds);
+    if (next_selection.valid &&
+            (!app->music_active) &&
+            ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index))) {
+        double current_positions = app->elapsed_seconds / app->options.position_seconds;
+
+        app->active_scene_index = next_selection.original_scene_index;
+        log_scene_transition(app, "synthetic", next_selection.original_scene_index, (unsigned int)current_positions);
+    }
+
+    app->selection = next_selection;
 
     if (!app->selection.valid) {
         return;
@@ -817,6 +882,15 @@ static void step_current_segment(ReplayApp *app)
             &app->random,
             app->selection.local_seconds,
             &app->kaar_frame
+        );
+        break;
+
+    case REPLAY_FAMILY_S_PAIR:
+        cornball_s_pair_scene_step_frame(
+            &app->s_pair_scene,
+            &app->random,
+            app->selection.local_seconds,
+            &app->s_pair_frame
         );
         break;
 
@@ -845,8 +919,10 @@ static void step_current_segment(ReplayApp *app)
 
 static void warmup_replay(ReplayApp *app)
 {
+    double step_seconds;
     double total_seconds;
 
+    step_seconds = replay_step_seconds(&app->options);
     total_seconds = replay_total_seconds(app->options.position_seconds);
     if (app->options.demo_seconds > total_seconds) {
         app->options.demo_seconds = total_seconds;
@@ -855,8 +931,8 @@ static void warmup_replay(ReplayApp *app)
     app->elapsed_seconds = 0.0;
     step_current_segment(app);
 
-    while ((app->elapsed_seconds + kSimulationStepSeconds) <= (app->options.demo_seconds + 1e-9)) {
-        app->elapsed_seconds += kSimulationStepSeconds;
+    while ((app->elapsed_seconds + step_seconds) <= (app->options.demo_seconds + 1e-9)) {
+        app->elapsed_seconds += step_seconds;
         step_current_segment(app);
     }
 }
@@ -872,7 +948,14 @@ static int init_renderers(ReplayApp *app, char *error_message, size_t error_mess
         return 0;
     }
 
+    if (!cornball_s_pair_gl_init(&app->s_pair_renderer, app->options.asset_root, error_message, error_message_size)) {
+        cornball_kaar_gl_shutdown(&app->kaar_renderer);
+        cornball_intro_gl_shutdown(&app->intro_renderer);
+        return 0;
+    }
+
     if (!cornball_surf_gl_init(&app->surf_renderer, app->options.asset_root, error_message, error_message_size)) {
+        cornball_s_pair_gl_shutdown(&app->s_pair_renderer);
         cornball_kaar_gl_shutdown(&app->kaar_renderer);
         cornball_intro_gl_shutdown(&app->intro_renderer);
         return 0;
@@ -880,6 +963,7 @@ static int init_renderers(ReplayApp *app, char *error_message, size_t error_mess
 
     if (!cornball_fla_gl_init(&app->fla_renderer, app->options.asset_root, error_message, error_message_size)) {
         cornball_surf_gl_shutdown(&app->surf_renderer);
+        cornball_s_pair_gl_shutdown(&app->s_pair_renderer);
         cornball_kaar_gl_shutdown(&app->kaar_renderer);
         cornball_intro_gl_shutdown(&app->intro_renderer);
         return 0;
@@ -892,6 +976,7 @@ static void shutdown_renderers(ReplayApp *app)
 {
     cornball_fla_gl_shutdown(&app->fla_renderer);
     cornball_surf_gl_shutdown(&app->surf_renderer);
+    cornball_s_pair_gl_shutdown(&app->s_pair_renderer);
     cornball_kaar_gl_shutdown(&app->kaar_renderer);
     cornball_intro_gl_shutdown(&app->intro_renderer);
 }
@@ -916,6 +1001,7 @@ static LRESULT CALLBACK replay_wndproc(HWND hwnd, UINT message, WPARAM w_param, 
             if (app->hglrc != NULL) {
                 cornball_intro_gl_resize(&app->intro_renderer, app->width, app->height);
                 cornball_kaar_gl_resize(&app->kaar_renderer, app->width, app->height);
+                cornball_s_pair_gl_resize(&app->s_pair_renderer, app->width, app->height);
                 cornball_surf_gl_resize(&app->surf_renderer, app->width, app->height);
                 cornball_fla_gl_resize(&app->fla_renderer, app->width, app->height);
             }
@@ -1061,6 +1147,11 @@ static void render_current_segment(ReplayApp *app)
         cornball_kaar_gl_render(&app->kaar_renderer, &app->kaar_frame);
         break;
 
+    case REPLAY_FAMILY_S_PAIR:
+        cornball_s_pair_gl_resize(&app->s_pair_renderer, app->width, app->height);
+        cornball_s_pair_gl_render(&app->s_pair_renderer, &app->s_pair_frame);
+        break;
+
     case REPLAY_FAMILY_SURF:
         cornball_surf_gl_resize(&app->surf_renderer, app->width, app->height);
         cornball_surf_gl_render(&app->surf_renderer, &app->surf_frame);
@@ -1083,6 +1174,7 @@ static int update_and_render(ReplayApp *app)
 {
     LARGE_INTEGER now;
     double delta_seconds;
+    double step_seconds;
     double total_seconds;
     RECT client_rect;
 
@@ -1090,11 +1182,12 @@ static int update_and_render(ReplayApp *app)
     delta_seconds = (double)(now.QuadPart - app->last_tick.QuadPart) / (double)app->perf_frequency.QuadPart;
     app->last_tick = now;
 
+    step_seconds = replay_step_seconds(&app->options);
     total_seconds = replay_total_seconds(app->options.position_seconds);
 
     if (automated_mode_enabled(app) && !app->music_active) {
         if (app->presented_frames > 0u) {
-            app->elapsed_seconds += kSimulationStepSeconds;
+            app->elapsed_seconds += step_seconds;
             if (app->elapsed_seconds > total_seconds) {
                 app->elapsed_seconds = total_seconds;
             }
@@ -1107,8 +1200,8 @@ static int update_and_render(ReplayApp *app)
 
         app->accumulator_seconds += delta_seconds;
 
-        while (app->accumulator_seconds >= kSimulationStepSeconds) {
-            app->elapsed_seconds += kSimulationStepSeconds;
+        while (app->accumulator_seconds >= step_seconds) {
+            app->elapsed_seconds += step_seconds;
             if (!app->music_active && (app->elapsed_seconds > total_seconds)) {
                 app->elapsed_seconds = total_seconds;
             }
@@ -1116,7 +1209,7 @@ static int update_and_render(ReplayApp *app)
                 update_music_selection(app);
             }
             step_current_segment(app);
-            app->accumulator_seconds -= kSimulationStepSeconds;
+            app->accumulator_seconds -= step_seconds;
 
             if (!app->music_active && (app->elapsed_seconds >= total_seconds)) {
                 break;
@@ -1161,7 +1254,7 @@ int main(int argc, char **argv)
     if (!resolve_asset_root(&app.options)) {
         fprintf(
             stderr,
-            "Could not resolve a valid asset root containing V1.TGA, V2.TGA, TXT1.TGA, TXT2.TGA, LOGO.TGA, LOGOTAUS.TGA, KAAR128.TGA, SURF128.TGA, and FLA.TGA.\n"
+            "Could not resolve a valid asset root containing V1.TGA, V2.TGA, TXT1.TGA, TXT2.TGA, LOGO.TGA, LOGOTAUS.TGA, KAAR128.TGA, S1.TGA, S2.TGA, SURF128.TGA, and FLA.TGA.\n"
         );
         return 1;
     }
@@ -1172,6 +1265,8 @@ int main(int argc, char **argv)
     cornball_intro_scene_loader_pass(&app.intro_scene);
     cornball_kaar_scene_clear(&app.kaar_scene);
     cornball_kaar_scene_loader_pass(&app.kaar_scene);
+    cornball_s_pair_scene_clear(&app.s_pair_scene);
+    cornball_s_pair_scene_loader_pass(&app.s_pair_scene);
     cornball_surf_scene_clear(&app.surf_scene);
     cornball_surf_scene_loader_pass(&app.surf_scene);
     cornball_fla_scene_clear(&app.fla_scene);

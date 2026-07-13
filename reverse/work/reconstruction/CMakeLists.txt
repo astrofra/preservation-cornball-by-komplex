@@ -14,6 +14,8 @@ add_library(
     src/cornball_intro_gl.c
     src/cornball_kaar_scene.c
     src/cornball_kaar_gl.c
+    src/cornball_s_pair_scene.c
+    src/cornball_s_pair_gl.c
     src/cornball_surf_scene.c
     src/cornball_surf_gl.c
     src/cornball_random.c
@@ -83,6 +85,19 @@ if(CORNBALL_BUILD_TESTS)
     endif()
 
     add_test(NAME surf_scene_smoketest COMMAND surf_scene_smoketest)
+
+    add_executable(
+        s_pair_scene_smoketest
+        tests/s_pair_scene_smoketest.c
+    )
+
+    target_link_libraries(s_pair_scene_smoketest PRIVATE cornball_reconstruction)
+
+    if(NOT MSVC)
+        target_link_libraries(s_pair_scene_smoketest PRIVATE m)
+    endif()
+
+    add_test(NAME s_pair_scene_smoketest COMMAND s_pair_scene_smoketest)
 endif()
 
 if(WIN32)

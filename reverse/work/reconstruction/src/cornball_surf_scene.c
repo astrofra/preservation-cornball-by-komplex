@@ -104,8 +104,8 @@ static void build_fog_state(CornballSurfFogState *fog)
 static void build_tube_shell(double scene_elapsed_seconds, CornballSurfTubeShellPass *tube_shell)
 {
     tube_shell->enabled = 1u;
-    tube_shell->translate_x = (float)(cos(scene_elapsed_seconds * kTubeTranslateXRate) * kTubeTranslateAmp);
-    tube_shell->translate_y = (float)(cos(scene_elapsed_seconds * kTubeTranslateYRate) * kTubeTranslateAmp);
+    tube_shell->translate_x = (float)(cos(scene_elapsed_seconds * kTubeTranslateYRate) * kTubeTranslateAmp);
+    tube_shell->translate_y = (float)(cos(scene_elapsed_seconds * kTubeTranslateXRate) * kTubeTranslateAmp);
     tube_shell->translate_z = 0.0f;
     tube_shell->rotate_z_pre_degrees = (float)(scene_elapsed_seconds * kTubeRotateZPreRate);
     tube_shell->rotate_x_degrees = (float)(sin(scene_elapsed_seconds * kTubeRotateXRate) * kTubeRotateXAmp);

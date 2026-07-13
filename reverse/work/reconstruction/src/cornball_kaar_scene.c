@@ -129,10 +129,10 @@ static void build_jitter_overlay(
         0.0f,
         0.0f,
         0.0f,
-        scene->overlay_state.jitter_x - 1.0f,
         scene->overlay_state.jitter_x,
-        scene->overlay_state.jitter_y - 1.0f,
-        scene->overlay_state.jitter_y
+        scene->overlay_state.jitter_x + 1.0f,
+        scene->overlay_state.jitter_y,
+        scene->overlay_state.jitter_y + 1.0f
     );
 }
 
@@ -148,8 +148,8 @@ static void build_main_tube_shell(double scene_elapsed_seconds, CornballKaarFram
     frame->fog.end_distance = kFogEndDistance;
 
     frame->tube_shell.enabled = 1u;
-    frame->tube_shell.translate_x = (float)(cos(scene_elapsed_seconds * kOrbitXRate) * kOrbitXAmp);
-    frame->tube_shell.translate_y = (float)(cos(scene_elapsed_seconds * kOrbitYRate) * kOrbitYAmp);
+    frame->tube_shell.translate_x = (float)(cos(scene_elapsed_seconds * kOrbitYRate) * kOrbitYAmp);
+    frame->tube_shell.translate_y = (float)(cos(scene_elapsed_seconds * kOrbitXRate) * kOrbitXAmp);
     frame->tube_shell.translate_z = 0.0f;
     frame->tube_shell.rotate_x_degrees = (float)(sin(scene_elapsed_seconds * kRotateXRate) * kRotateXAmp);
     frame->tube_shell.rotate_y_degrees = (float)(scene_elapsed_seconds * kRotateYRate);
