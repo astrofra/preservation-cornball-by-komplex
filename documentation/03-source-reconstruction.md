@@ -21,7 +21,7 @@ This first coding pass reconstructs:
 - a third OpenGL renderer that uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - a second OpenGL renderer that uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
 - a fourth OpenGL renderer that uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
-- a Win32/WGL preview executable for Windows 10/11
+- a single Win32/WGL replay executable that chains the reconstructed families in original scene order
 - a reusable back-buffer frame-dump path for hidden preview captures
 
 It does not yet reconstruct:
@@ -60,6 +60,7 @@ Created under `reverse/work/reconstruction/`:
 - [src/cornball_surf_scene.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_scene.c)
 - [src/cornball_surf_gl.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_gl.c)
 - [src/cornball_surf_preview_win32.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_surf_preview_win32.c)
+- [src/cornball_demo_replay_win32.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/src/cornball_demo_replay_win32.c)
 - [tests/fla_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/fla_scene_smoketest.c)
 - [tests/intro_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/intro_scene_smoketest.c)
 - [tests/kaar_scene_smoketest.c](/C:/works/projects/preservation-cornball-by-komplex/reverse/work/reconstruction/tests/kaar_scene_smoketest.c)
@@ -131,6 +132,7 @@ The current C reconstruction models these points directly from the binary:
 - `kaar` frame gate `= rand15 * 0.0000305185094759972`
 - `kaar` main branch only when the gate is `<= 0.25`
 - fogged `KAAR128.TGA` tube-shell pass with additive blending
+- `kaar` uses the same global `65 / 1 / 90` perspective camera as the original demo bootstrap, not the earlier orthographic approximation
 - tube-shell transform `x = cos(t * 0.2) * 190`, `y = cos(t * 0.3) * 3`
 - tube-shell rotation `rx = sin(t * 0.3) * 190`, `ry = t * 2`, `rz = t`
 - tube-shell texture phase `= t * 0.1`, with the opposite side sampled at `phase + 3.0`
@@ -140,6 +142,8 @@ The current C reconstruction models these points directly from the binary:
 - `surf` additive `FLA.TGA` stack of `32` quads, with base `z = t * 8` and per-layer step `-10`
 - `surf` rotating `SURF128.TGA` foreground quad at `z = -1`, `u/v = 0 .. 2`, rotation `= t * 11`, blend `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
 - `surf` `TXT1.TGA` jitter overlay with reseed mask `0`, so it consumes two fresh random samples every frame
+- replay ordering `= intro(0) -> kaar(1) -> surf(3) -> fla(5) -> surf(6) -> intro(7) -> kaar(8)`, matching the original dispatch order for the families reconstructed so far
+- replay segment lengths are driven by the original music-position slot widths and exposed through a synthetic `--position-seconds` rate until the exact audio-driven timing is rebuilt
 
 One important correction from the first pass:
 
@@ -164,8 +168,7 @@ The smoke test checks:
 - the helper-owned `TXT1` jitter overlay state emitted by the fixed-step frame tick
 - the first two `kaar` frame gates from seed `1`
 - both `kaar` render branches: fogged tube-shell path and jitter-overlay path
-- hidden OpenGL preview startup for two rendered frames
-- deterministic hidden preview capture for the intro family at `310 x 238`
+- hidden end-to-end replay startup across the full chained scene set
 
 ## Current verification status
 
@@ -187,18 +190,13 @@ Result:
 - `intro_scene_smoketest` passed
 - `kaar_scene_smoketest` passed
 - `surf_scene_smoketest` passed
-- `fla_scene_preview_smoketest` passed
-- `intro_scene_preview_smoketest` passed
-- `kaar_scene_preview_smoketest` passed
-- `surf_scene_preview_smoketest` passed
+- `cornball_demo_replay_smoketest` passed
 
-## Preview entrypoint
+## Replay entrypoint
 
 The new executable target is:
 
-- `fla_scene_preview`
-- `intro_scene_preview`
-- `surf_scene_preview`
+- `cornball_demo_replay`
 
 It currently:
 
@@ -208,19 +206,17 @@ It currently:
 - uploads `V1.TGA`, `V2.TGA`, `TXT1.TGA`, `TXT2.TGA`, `LOGO.TGA`, and `LOGOTAUS.TGA`
 - uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
 - uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
-- runs the `fla` scene with a fixed `60 Hz` full-frame simulation step
-- runs the opening `intro` multi-stage slice with the same fixed `60 Hz` scene-frame cadence
-- runs the `kaar` scene with the same fixed `60 Hz` scene-frame cadence
-- runs the `surf` scene with the same fixed `60 Hz` scene-frame cadence
+- runs the chained reconstructed sequence with a fixed `60 Hz` scene-frame cadence
+- resets scene-local time at each original scene-slot transition while keeping the global PRNG and family-owned state alive
 - supports `--hidden --frames <n>` for automated smoke runs
-- supports `--width`, `--height`, `--seed`, `--scene-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
+- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
 
-The fixed-step choice is deliberate: the original `fla` routine is frame-based and consumes helper RNG state once per scene frame, so the preview needs an explicit host-side simulation cadence instead of tying particle respawns, overlay tint, and jitter state to an unrestricted modern refresh rate.
+The fixed-step choice is deliberate: the original `fla` routine is frame-based and consumes helper RNG state once per scene frame, so the replay needs an explicit host-side simulation cadence instead of tying particle respawns, overlay tint, and jitter state to an unrestricted modern refresh rate.
 
 ## Next step
 
 Use this buildable `fla` / `intro` base as the template for the next lift:
 
-1. compare the new `surf` reconstruction against the `frame_002548` reference anchor and tune any remaining projection or layer-order mismatch
-2. revisit the earlier `kaar` preview with the now-confirmed global perspective setup, since its current renderer still uses an orthographic approximation
-3. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added
+1. compare the replayed `surf` and `kaar` captures against the reference-video anchors and tune any remaining projection or layer-order mismatch
+2. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added
+3. lift the missing `s` pair and finale families so the dispatcher can stop compressing the unreconstructed gaps

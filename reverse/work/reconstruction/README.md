@@ -15,8 +15,8 @@ Current scope:
 - OpenGL renderer for the reconstructed early `intro` stages
 - OpenGL renderer for the reconstructed `kaar` scene
 - OpenGL renderer for the reconstructed `surf` scene
-- Win32/WGL preview executable for Windows 10/11
-- smoke test coverage for both deterministic scene reconstruction and the hidden OpenGL preview paths
+- single Win32/WGL replay executable for Windows 10/11 that chains the reconstructed scene families in original order
+- smoke test coverage for deterministic scene reconstruction plus a hidden end-to-end replay run
 
 Build with Visual Studio 2022 via CMake:
 
@@ -25,20 +25,18 @@ cmake -S reverse/work/reconstruction -B reverse/work/reconstruction/build -G "Vi
 cmake --build reverse/work/reconstruction/build --config Release
 Push-Location reverse/work/reconstruction/build
 ctest -C Release --output-on-failure
-.\Release\fla_scene_preview.exe
-.\Release\intro_scene_preview.exe
-.\Release\kaar_scene_preview.exe
-.\Release\surf_scene_preview.exe
+.\Release\cornball_demo_replay.exe
 Pop-Location
 ```
 
-Optional preview flags:
+Optional replay flags:
 
-- `--hidden --frames 2` for a short automated smoke run
+- `--hidden --frames 120 --position-seconds 0.05` for a short automated full-sequence smoke run
 - `--asset-root <path>` to point at an alternate extracted asset directory
 - `--width <pixels> --height <pixels>` to match a reference capture size
 - `--seed <lcg-seed>` to explore deterministic overlay alignment
-- `--scene-seconds <seconds>` to warm a scene before the first presented frame
+- `--demo-seconds <seconds>` to warm the chained replay before the first presented frame
+- `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic replay
 - `--capture-dir <path> --capture-every <n>` to dump back-buffer frames as `TGA`
 
-The current code still does not rebuild the original demo's full startup shell, audio path, scene dispatcher, or the remaining scene families.
+The current code still does not rebuild the original demo's full startup shell, original audio path, the unreconstructed scene families, or the exact audio-driven duration mapping between music positions and wall-clock time.

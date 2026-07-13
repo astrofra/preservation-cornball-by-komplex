@@ -12,9 +12,9 @@
 
 #include <GL/gl.h>
 
-static const float kWorldHalfHeight = 192.0f;
-static const float kWorldNear = -256.0f;
-static const float kWorldFar = 256.0f;
+static const float kPerspectiveFovDegrees = 65.0f;
+static const float kPerspectiveNear = 1.0f;
+static const float kPerspectiveFar = 90.0f;
 static const float kCenteredTexcoordInset = 0.01f;
 static const float kTubeRingZBias = 0.5f;
 static const float kTubeRingZScale = 140.0f;
@@ -205,19 +205,23 @@ static void join_asset_path(char *dst, size_t dst_size, const char *root, const 
 static void apply_projection(const CornballKaarGlRenderer *renderer)
 {
     float aspect;
-    float half_width;
+    float top;
+    float right;
+    float radians;
 
     aspect = 1.0f;
     if ((renderer->viewport_width > 0) && (renderer->viewport_height > 0)) {
         aspect = (float)renderer->viewport_width / (float)renderer->viewport_height;
     }
 
-    half_width = kWorldHalfHeight * aspect;
+    radians = (kPerspectiveFovDegrees * 3.14159265358979323846f) / 360.0f;
+    top = kPerspectiveNear * tanf(radians);
+    right = top * aspect;
 
     glViewport(0, 0, renderer->viewport_width, renderer->viewport_height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-half_width, half_width, -kWorldHalfHeight, kWorldHalfHeight, kWorldNear, kWorldFar);
+    glFrustum(-right, right, -top, top, kPerspectiveNear, kPerspectiveFar);
     glMatrixMode(GL_MODELVIEW);
 }
 

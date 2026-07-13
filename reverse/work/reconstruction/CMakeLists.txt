@@ -87,12 +87,12 @@ endif()
 
 if(WIN32)
     add_executable(
-        fla_scene_preview
-        src/cornball_fla_preview_win32.c
+        cornball_demo_replay
+        src/cornball_demo_replay_win32.c
     )
 
     target_link_libraries(
-        fla_scene_preview
+        cornball_demo_replay
         PRIVATE
         cornball_reconstruction
         opengl32
@@ -101,60 +101,9 @@ if(WIN32)
     )
 
     if(CORNBALL_BUILD_TESTS)
-        add_test(NAME fla_scene_preview_smoketest COMMAND fla_scene_preview --hidden --frames 2)
-    endif()
-
-    add_executable(
-        intro_scene_preview
-        src/cornball_intro_preview_win32.c
-    )
-
-    target_link_libraries(
-        intro_scene_preview
-        PRIVATE
-        cornball_reconstruction
-        opengl32
-        gdi32
-        user32
-    )
-
-    if(CORNBALL_BUILD_TESTS)
-        add_test(NAME intro_scene_preview_smoketest COMMAND intro_scene_preview --hidden --frames 2)
-    endif()
-
-    add_executable(
-        kaar_scene_preview
-        src/cornball_kaar_preview_win32.c
-    )
-
-    target_link_libraries(
-        kaar_scene_preview
-        PRIVATE
-        cornball_reconstruction
-        opengl32
-        gdi32
-        user32
-    )
-
-    if(CORNBALL_BUILD_TESTS)
-        add_test(NAME kaar_scene_preview_smoketest COMMAND kaar_scene_preview --hidden --frames 2)
-    endif()
-
-    add_executable(
-        surf_scene_preview
-        src/cornball_surf_preview_win32.c
-    )
-
-    target_link_libraries(
-        surf_scene_preview
-        PRIVATE
-        cornball_reconstruction
-        opengl32
-        gdi32
-        user32
-    )
-
-    if(CORNBALL_BUILD_TESTS)
-        add_test(NAME surf_scene_preview_smoketest COMMAND surf_scene_preview --hidden --frames 2)
+        add_test(
+            NAME cornball_demo_replay_smoketest
+            COMMAND cornball_demo_replay --hidden --frames 120 --position-seconds 0.05
+        )
     endif()
 endif()
