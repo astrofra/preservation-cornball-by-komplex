@@ -111,15 +111,12 @@ static void reseed_overlay_jitter(CornballKaarScene *scene, CornballRandom *rand
     scene->overlay_state.call_counter += 1u;
 }
 
-static void build_jitter_overlay(
-    CornballKaarScene *scene,
-    CornballRandom *random,
+static void write_jitter_overlay(
+    const CornballKaarScene *scene,
     float gate_unit,
     CornballKaarFrame *frame
 )
 {
-    reseed_overlay_jitter(scene, random);
-
     fill_layer_quad(
         &frame->jitter_overlay_quad,
         kHelperQuadHalfExtent,
@@ -171,6 +168,24 @@ void cornball_kaar_scene_loader_pass(CornballKaarScene *scene)
     scene->texture_group_loaded = 1u;
 }
 
+void cornball_kaar_scene_set_force_main_branch(CornballKaarScene *scene, uint32_t enabled)
+{
+    if (scene == NULL) {
+        return;
+    }
+
+    scene->force_main_branch = (enabled != 0u) ? 1u : 0u;
+}
+
+void cornball_kaar_scene_set_isolate_tube_pass(CornballKaarScene *scene, uint32_t enabled)
+{
+    if (scene == NULL) {
+        return;
+    }
+
+    scene->isolate_tube_pass = (enabled != 0u) ? 1u : 0u;
+}
+
 void cornball_kaar_scene_step_frame(
     CornballKaarScene *scene,
     CornballRandom *random,
@@ -179,6 +194,7 @@ void cornball_kaar_scene_step_frame(
 )
 {
     unsigned gate_rand15;
+    uint32_t natural_overlay_branch;
 
     memset(frame, 0, sizeof(*frame));
 
@@ -190,11 +206,23 @@ void cornball_kaar_scene_step_frame(
     disable_fog(&frame->fog);
     disable_tube_shell(&frame->tube_shell);
 
-    if (frame->gate_unit > kKaarPreludeThreshold) {
-        build_jitter_overlay(scene, random, frame->gate_unit, frame);
+    natural_overlay_branch = (frame->gate_unit > kKaarPreludeThreshold) ? 1u : 0u;
+
+    if (natural_overlay_branch != 0u) {
+        reseed_overlay_jitter(scene, random);
+    }
+
+    if ((natural_overlay_branch != 0u) &&
+            (scene->force_main_branch == 0u) &&
+            (scene->isolate_tube_pass == 0u)) {
+        write_jitter_overlay(scene, frame->gate_unit, frame);
     } else {
         build_main_tube_shell(scene_elapsed_seconds, frame);
     }
 
     build_center_quad(frame, frame->gate_tint, scene_elapsed_seconds);
+    if (scene->isolate_tube_pass != 0u) {
+        disable_layer_quad(&frame->txt1_center_quad);
+        frame->txt1_rotation_degrees = 0.0f;
+    }
 }

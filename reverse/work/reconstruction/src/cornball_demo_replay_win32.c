@@ -56,6 +56,8 @@ typedef struct ReplayOptions {
     unsigned int max_frames;
     unsigned int capture_every;
     unsigned int random_seed;
+    int force_kaar_main_branch;
+    int isolate_kaar_tube;
     int hidden;
     int window_width;
     int window_height;
@@ -435,6 +437,10 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
         } else if ((strcmp(argv[i], "--fixed-step-hz") == 0) && ((i + 1) < argc)) {
             options->fixed_step_hz = strtod(argv[i + 1], NULL);
             ++i;
+        } else if (strcmp(argv[i], "--force-kaar-main-branch") == 0) {
+            options->force_kaar_main_branch = 1;
+        } else if (strcmp(argv[i], "--isolate-kaar-tube") == 0) {
+            options->isolate_kaar_tube = 1;
         } else if (strcmp(argv[i], "--music") == 0) {
             options->music_mode = REPLAY_MUSIC_MODE_ON;
         } else if (strcmp(argv[i], "--no-music") == 0) {
@@ -1265,6 +1271,14 @@ int main(int argc, char **argv)
     cornball_intro_scene_loader_pass(&app.intro_scene);
     cornball_kaar_scene_clear(&app.kaar_scene);
     cornball_kaar_scene_loader_pass(&app.kaar_scene);
+    cornball_kaar_scene_set_force_main_branch(
+        &app.kaar_scene,
+        (uint32_t)(((app.options.force_kaar_main_branch != 0) || (app.options.isolate_kaar_tube != 0)) ? 1u : 0u)
+    );
+    cornball_kaar_scene_set_isolate_tube_pass(
+        &app.kaar_scene,
+        (uint32_t)((app.options.isolate_kaar_tube != 0) ? 1u : 0u)
+    );
     cornball_s_pair_scene_clear(&app.s_pair_scene);
     cornball_s_pair_scene_loader_pass(&app.s_pair_scene);
     cornball_surf_scene_clear(&app.surf_scene);

@@ -61,6 +61,8 @@ Optional replay flags:
 - `--demo-seconds <seconds>` to warm the chained replay before the first presented frame
 - `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic replay
 - `--fixed-step-hz <hz>` to vary the deterministic state-update cadence during analysis captures
+- `--force-kaar-main-branch` to keep `kaar` on its tube-branch while still preserving the original overlay-branch RNG consumption
+- `--isolate-kaar-tube` to hide the centered `TXT1` quad during `kaar` and inspect the tube pass by itself
 - `--capture-dir <path> --capture-every <n>` to dump back-buffer frames as `TGA`
 
 Current music behavior:

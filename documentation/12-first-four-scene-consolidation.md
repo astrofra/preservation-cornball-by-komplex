@@ -175,6 +175,36 @@ What did not change:
 
 So this iteration resolves the compositing bug, but not the remaining branch/timing mismatch.
 
+## Iteration 6
+
+To compare the `kaar` tube branch directly against the VHS anchor, two analysis-only replay controls were added:
+
+- `--force-kaar-main-branch`
+- `--isolate-kaar-tube`
+
+The first keeps `kaar` on its tube branch while preserving the original RNG consumption that would have happened on overlay frames. The second implies the tube branch and also hides the centered `TXT1` quad so the tube pass can be inspected by itself.
+
+### Capture Outcome
+
+Artifacts:
+
+- [scene1 forced-main anchor](../reverse/work/reconstruction/captures/scene1-force-main-anchor/replay_frame_000000.png)
+- [scene1 forced-main burst](../reverse/work/reconstruction/captures/scene1-force-main-burst/contact-sheet.png)
+- [scene1 isolate-tube anchor](../reverse/work/reconstruction/captures/scene1-isolate-tube-anchor/replay_frame_000000.png)
+- [scene1 isolate-tube burst](../reverse/work/reconstruction/captures/scene1-isolate-tube-burst/contact-sheet.png)
+
+Observed change:
+
+- forcing the main branch removes the red overlay wall and leaves the brown/black centered `TXT1` composition in front of the scene
+- isolating the tube pass removes that centered quad entirely
+
+Key finding:
+
+- the isolated `kaar` tube pass is effectively black at the early `43.008 s` anchor
+- the short isolated burst is also black throughout
+
+So the remaining mismatch is now narrower than before. The current failure is no longer "the overlay hides the tube." It is "the lifted `kaar` tube pass itself is not producing the expected visible image at this anchor."
+
 ## Current Conclusion
 
 What now looks solid:
@@ -191,12 +221,13 @@ What is still unresolved:
 - the current `kaar` reconstruction still does not expose that look at the calibrated early anchor
 - fixed-step cadence alone does not explain the mismatch
 - after fixing the texture-alpha path, the remaining gap now looks more like branch selection or scene-state timing than simple layer occlusion
+- after forcing and isolating the `kaar` main branch, the tube pass itself still renders as black at the anchor used for comparison
 
 So the next logical target is narrower than before:
 
-1. add a forced or isolated `kaar` main-branch capture mode so the tube can be compared directly against the VHS frame
-2. trace any remaining random-consumption or caller-timing mismatch now that the overlay no longer buries the background
-3. only after that, revisit whether the remaining gap is a deeper helper/render-state issue
+1. inspect the lifted `kaar` tube pass itself: `KAAR128` texture interpretation, additive blend, geometry cache, and camera placement
+2. compare the isolated black capture against the original binary state to see whether the tube should already be visible before the centered `TXT1` quad is applied
+3. only after that, revisit whether any remaining mismatch is random-consumption noise rather than a tube-rendering issue
 
 ## Verification
 

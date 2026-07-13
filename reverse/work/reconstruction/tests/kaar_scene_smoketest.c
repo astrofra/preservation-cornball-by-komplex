@@ -31,14 +31,31 @@ static void assert_equal_u32(const char *label, unsigned actual, unsigned expect
 int main(void)
 {
     CornballRandom random;
+    CornballRandom forced_random;
+    CornballRandom isolated_random;
     CornballKaarScene scene;
+    CornballKaarScene forced_scene;
+    CornballKaarScene isolated_scene;
     CornballKaarFrame frame;
+    CornballKaarFrame forced_frame;
+    CornballKaarFrame isolated_frame;
 
     cornball_random_seed(&random, 1u);
+    cornball_random_seed(&forced_random, 1u);
+    cornball_random_seed(&isolated_random, 1u);
     cornball_kaar_scene_clear(&scene);
     cornball_kaar_scene_loader_pass(&scene);
+    cornball_kaar_scene_clear(&forced_scene);
+    cornball_kaar_scene_loader_pass(&forced_scene);
+    cornball_kaar_scene_set_force_main_branch(&forced_scene, 1u);
+    cornball_kaar_scene_clear(&isolated_scene);
+    cornball_kaar_scene_loader_pass(&isolated_scene);
+    cornball_kaar_scene_set_isolate_tube_pass(&isolated_scene, 1u);
 
     assert_equal_u32("texture_group_loaded", scene.texture_group_loaded, 1u);
+    assert_equal_u32("forced.texture_group_loaded", forced_scene.texture_group_loaded, 1u);
+    assert_equal_u32("forced.force_main_branch", forced_scene.force_main_branch, 1u);
+    assert_equal_u32("isolated.isolate_tube_pass", isolated_scene.isolate_tube_pass, 1u);
 
     cornball_kaar_scene_step_frame(&scene, &random, 1.0, &frame);
 
@@ -74,6 +91,33 @@ int main(void)
     assert_close("step2.overlay.max_v", frame.jitter_overlay_quad.texcoord_max_v, 1.808715820f, 0.000001f);
     assert_close("step2.txt1.green", frame.txt1_center_quad.color_g, 0.356358528f, 0.000001f);
     assert_close("step2.txt1.rotation", frame.txt1_rotation_degrees, 22.0f, 0.000001f);
+
+    cornball_kaar_scene_step_frame(&forced_scene, &forced_random, 1.0, &forced_frame);
+    cornball_kaar_scene_step_frame(&forced_scene, &forced_random, 2.0, &forced_frame);
+
+    assert_close("forced.step2.gate_unit", forced_frame.gate_unit, 0.563585341f, 0.000001f);
+    assert_equal_u32("forced.step2.fog.enabled", forced_frame.fog.enabled, 1u);
+    assert_equal_u32("forced.step2.tube.enabled", forced_frame.tube_shell.enabled, 1u);
+    assert_equal_u32("forced.step2.jitter.enabled", forced_frame.jitter_overlay_quad.enabled, 0u);
+    assert_equal_u32("forced.step2.overlay.call_counter", forced_scene.overlay_state.call_counter, 1u);
+    assert_close("forced.step2.overlay.jitter_x", forced_scene.overlay_state.jitter_x, 0.193298340f, 0.000001f);
+    assert_close("forced.step2.overlay.jitter_y", forced_scene.overlay_state.jitter_y, 0.808715820f, 0.000001f);
+    assert_close("forced.step2.translate_x", forced_frame.tube_shell.translate_x, 2.476006985f, 0.000001f);
+    assert_close("forced.step2.translate_y", forced_frame.tube_shell.translate_y, 175.001586914f, 0.000100f);
+    assert_close("forced.step2.rotate_y", forced_frame.tube_shell.rotate_y_degrees, 4.0f, 0.000001f);
+    assert_close("forced.step2.txt1.rotation", forced_frame.txt1_rotation_degrees, 22.0f, 0.000001f);
+
+    cornball_kaar_scene_step_frame(&isolated_scene, &isolated_random, 1.0, &isolated_frame);
+    cornball_kaar_scene_step_frame(&isolated_scene, &isolated_random, 2.0, &isolated_frame);
+
+    assert_equal_u32("isolated.step2.fog.enabled", isolated_frame.fog.enabled, 1u);
+    assert_equal_u32("isolated.step2.tube.enabled", isolated_frame.tube_shell.enabled, 1u);
+    assert_equal_u32("isolated.step2.jitter.enabled", isolated_frame.jitter_overlay_quad.enabled, 0u);
+    assert_equal_u32("isolated.step2.txt1.enabled", isolated_frame.txt1_center_quad.enabled, 0u);
+    assert_equal_u32("isolated.step2.overlay.call_counter", isolated_scene.overlay_state.call_counter, 1u);
+    assert_close("isolated.step2.overlay.jitter_x", isolated_scene.overlay_state.jitter_x, 0.193298340f, 0.000001f);
+    assert_close("isolated.step2.overlay.jitter_y", isolated_scene.overlay_state.jitter_y, 0.808715820f, 0.000001f);
+    assert_close("isolated.step2.txt1.rotation", isolated_frame.txt1_rotation_degrees, 0.0f, 0.000001f);
 
     return 0;
 }

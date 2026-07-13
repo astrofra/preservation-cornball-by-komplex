@@ -61,10 +61,14 @@ typedef struct CornballKaarFrame {
 typedef struct CornballKaarScene {
     CornballKaarOverlayState overlay_state;
     uint32_t texture_group_loaded;
+    uint32_t force_main_branch;
+    uint32_t isolate_tube_pass;
 } CornballKaarScene;
 
 void cornball_kaar_scene_clear(CornballKaarScene *scene);
 void cornball_kaar_scene_loader_pass(CornballKaarScene *scene);
+void cornball_kaar_scene_set_force_main_branch(CornballKaarScene *scene, uint32_t enabled);
+void cornball_kaar_scene_set_isolate_tube_pass(CornballKaarScene *scene, uint32_t enabled);
 void cornball_kaar_scene_step_frame(
     CornballKaarScene *scene,
     CornballRandom *random,

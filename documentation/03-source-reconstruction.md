@@ -213,7 +213,7 @@ It currently:
 - in Win32/x86 builds, can start the original `AAB.XM` replay through the bundled `MIDAS06.DLL`
 - when that music path is active, follows the true tracker position for scene dispatch and still leaves unreconstructed scene slot `9` as black
 - supports `--hidden --frames <n>` for automated smoke runs
-- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--fixed-step-hz`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
+- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--fixed-step-hz`, `--force-kaar-main-branch`, `--isolate-kaar-tube`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
 
 Current comparison-oriented default:
 
