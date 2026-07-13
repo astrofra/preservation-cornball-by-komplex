@@ -66,8 +66,8 @@ int main(void)
     assert_equal_u32("step1.tube.enabled", frame.tube_shell.enabled, 1u);
     assert_close("step1.fog.density", frame.fog.density, 0.2f, 0.000001f);
     assert_close("step1.fog.end", frame.fog.end_distance, 65.0f, 0.000001f);
-    assert_close("step1.translate_x", frame.tube_shell.translate_x, 2.866009474f, 0.000001f);
-    assert_close("step1.translate_y", frame.tube_shell.translate_y, 186.212646484f, 0.000100f);
+    assert_close("step1.translate_x", frame.tube_shell.translate_x, 2.940199852f, 0.000001f);
+    assert_close("step1.translate_y", frame.tube_shell.translate_y, 2.866009474f, 0.000001f);
     assert_close("step1.rotate_x", frame.tube_shell.rotate_x_degrees, 56.148838043f, 0.000100f);
     assert_close("step1.rotate_y", frame.tube_shell.rotate_y_degrees, 2.0f, 0.000001f);
     assert_close("step1.rotate_z", frame.tube_shell.rotate_z_degrees, 1.0f, 0.000001f);
@@ -102,8 +102,8 @@ int main(void)
     assert_equal_u32("forced.step2.overlay.call_counter", forced_scene.overlay_state.call_counter, 1u);
     assert_close("forced.step2.overlay.jitter_x", forced_scene.overlay_state.jitter_x, 0.193298340f, 0.000001f);
     assert_close("forced.step2.overlay.jitter_y", forced_scene.overlay_state.jitter_y, 0.808715820f, 0.000001f);
-    assert_close("forced.step2.translate_x", forced_frame.tube_shell.translate_x, 2.476006985f, 0.000001f);
-    assert_close("forced.step2.translate_y", forced_frame.tube_shell.translate_y, 175.001586914f, 0.000100f);
+    assert_close("forced.step2.translate_x", forced_frame.tube_shell.translate_x, 2.763182879f, 0.000001f);
+    assert_close("forced.step2.translate_y", forced_frame.tube_shell.translate_y, 2.476006746f, 0.000001f);
     assert_close("forced.step2.rotate_y", forced_frame.tube_shell.rotate_y_degrees, 4.0f, 0.000001f);
     assert_close("forced.step2.txt1.rotation", forced_frame.txt1_rotation_degrees, 22.0f, 0.000001f);
 

@@ -21,10 +21,10 @@ static const float kFogColorA = 1.0f;
 static const float kFogDensity = 0.2f;
 static const float kFogStartDistance = 1.0f;
 static const float kFogEndDistance = 65.0f;
-static const double kOrbitXRate = 0.2;
-static const double kOrbitXAmp = 190.0;
-static const double kOrbitYRate = 0.3;
-static const double kOrbitYAmp = 3.0;
+static const double kTranslateXRate = 0.2;
+static const double kTranslateXAmp = 3.0;
+static const double kTranslateYRate = 0.3;
+static const double kTranslateYAmp = 3.0;
 static const double kRotateXRate = 0.3;
 static const double kRotateXAmp = 190.0;
 static const double kRotateYRate = 2.0;
@@ -145,8 +145,8 @@ static void build_main_tube_shell(double scene_elapsed_seconds, CornballKaarFram
     frame->fog.end_distance = kFogEndDistance;
 
     frame->tube_shell.enabled = 1u;
-    frame->tube_shell.translate_x = (float)(cos(scene_elapsed_seconds * kOrbitYRate) * kOrbitYAmp);
-    frame->tube_shell.translate_y = (float)(cos(scene_elapsed_seconds * kOrbitXRate) * kOrbitXAmp);
+    frame->tube_shell.translate_x = (float)(cos(scene_elapsed_seconds * kTranslateXRate) * kTranslateXAmp);
+    frame->tube_shell.translate_y = (float)(cos(scene_elapsed_seconds * kTranslateYRate) * kTranslateYAmp);
     frame->tube_shell.translate_z = 0.0f;
     frame->tube_shell.rotate_x_degrees = (float)(sin(scene_elapsed_seconds * kRotateXRate) * kRotateXAmp);
     frame->tube_shell.rotate_y_degrees = (float)(scene_elapsed_seconds * kRotateYRate);

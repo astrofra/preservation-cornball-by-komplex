@@ -104,7 +104,7 @@ Re-reading the original `glTranslatef` call sites showed that the reconstructed 
 
 Corrected formulas now used by the source lift:
 
-- `kaar`: `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 190`
+- `kaar`: `x = cos(t * 0.2) * 3`, `y = cos(t * 0.3) * 3`
 - `surf`: `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 3`
 
 This correction was applied in:
@@ -205,6 +205,35 @@ Key finding:
 
 So the remaining mismatch is now narrower than before. The current failure is no longer "the overlay hides the tube." It is "the lifted `kaar` tube pass itself is not producing the expected visible image at this anchor."
 
+## Iteration 7
+
+A caller-side recheck against `0x00402330` found that the first `kaar` lift had decoded `glTranslatef` with the wrong stack order.
+
+Corrected transform:
+
+- `x = cos(t * 0.2) * 3`
+- `y = cos(t * 0.3) * 3`
+- the `190` amplitude belongs only to `rx = sin(t * 0.3) * 190`
+
+### Capture Outcome
+
+Artifacts:
+
+- [scene1 isolate-tube anchor after translation fix](../reverse/work/reconstruction/captures/scene1-isolate-tube-anchor-translate-fix/replay_frame_000000.png)
+- [scene1 force-main anchor after translation fix](../reverse/work/reconstruction/captures/scene1-force-main-anchor-translate-fix/replay_frame_000000.png)
+- [reference VHS anchor](../reverse/work/reference-video/frames-cropped/frame_001075.png)
+
+Observed change:
+
+- the isolated `kaar` anchor is no longer black
+- it now exposes the expected cyan tube interior and a dark circular core, which was the missing visual cue from the VHS material
+- the force-main anchor still shows the centered `TXT1` layer dominating most of the frame, so the remaining mismatch has moved from tube visibility to scene composition
+
+Practical conclusion:
+
+- the shared tube helper and `KAAR128` pass are now close enough to the original to serve as a visual anchor
+- the next `kaar` target is the centered `TXT1` caller setup: exact quad placement, rotation, and how strongly it should sit in front of the tube at this moment
+
 ## Current Conclusion
 
 What now looks solid:
@@ -213,21 +242,21 @@ What now looks solid:
 - `intro` and `surf` are the best-matching first-pass reconstructions in this range
 - the original LCG seed really is `1`
 - the tube-scene caller translations needed the `x/y` swap and have now been corrected
+- the isolated `kaar` tube anchor is visible again and broadly matches the VHS cue of a cyan interior with a dark center
 - the centered `TXT1` overlay was indeed hiding too much of `scene1`, and the cause was missing alpha reconstruction for the legacy TGAs rather than the recovered `glBlendFunc` call itself
 
 What is still unresolved:
 
 - the green/cyan flashing tube seen in the early VHS material almost certainly belongs to `scene1 / kaar`
-- the current `kaar` reconstruction still does not expose that look at the calibrated early anchor
 - fixed-step cadence alone does not explain the mismatch
-- after fixing the texture-alpha path, the remaining gap now looks more like branch selection or scene-state timing than simple layer occlusion
-- after forcing and isolating the `kaar` main branch, the tube pass itself still renders as black at the anchor used for comparison
+- after fixing the texture-alpha path and the `glTranslatef` stack-order bug, the remaining gap now looks more like caller-side `TXT1` composition than a missing tube pass
+- the dark core in the reconstructed tube still sits lower than in the VHS anchor, so some camera or caller-side quad nuance may still be off
 
 So the next logical target is narrower than before:
 
-1. inspect the lifted `kaar` tube pass itself: `KAAR128` texture interpretation, additive blend, geometry cache, and camera placement
-2. compare the isolated black capture against the original binary state to see whether the tube should already be visible before the centered `TXT1` quad is applied
-3. only after that, revisit whether any remaining mismatch is random-consumption noise rather than a tube-rendering issue
+1. recover the remaining `kaar` centered-quad caller details from the original binary: exact color push order, rotation, and any matrix nuance around the `TXT1` pass
+2. compare the corrected force-main anchor against the VHS frame to tune why the dark core is vertically offset and why the foreground text layer reads too strongly
+3. only after that, revisit whether any remaining mismatch is random-consumption noise rather than caller-side composition
 
 ## Verification
 

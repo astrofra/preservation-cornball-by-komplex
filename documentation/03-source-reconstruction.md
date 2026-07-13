@@ -134,7 +134,7 @@ The current C reconstruction models these points directly from the binary:
 - `kaar` main branch only when the gate is `<= 0.25`
 - fogged `KAAR128.TGA` tube-shell pass with additive blending
 - `kaar` uses the same global `65 / 1 / 90` perspective camera as the original demo bootstrap, not the earlier orthographic approximation
-- tube-shell transform `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 190`
+- tube-shell transform `x = cos(t * 0.2) * 3`, `y = cos(t * 0.3) * 3`
 - tube-shell rotation `rx = sin(t * 0.3) * 190`, `ry = t * 2`, `rz = t`
 - tube-shell texture phase `= t * 0.1`, with the opposite side sampled at `phase + 3.0`
 - centered `TXT1.TGA` quad rotating at `t * 11` with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
