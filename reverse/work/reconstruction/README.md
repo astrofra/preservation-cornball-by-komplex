@@ -29,6 +29,12 @@ ctest -C Release --output-on-failure
 Pop-Location
 ```
 
+Default replay client size:
+
+- `640x400`
+- this is an intentional comparison preset for current VHS-ground-truth work, not a claim that the original Win32 shell stopped using `640x480`
+- `--width` and `--height` still override it when a different capture target is needed
+
 Optional replay flags:
 
 - `--hidden --frames 120 --position-seconds 0.05` for a short automated full-sequence smoke run

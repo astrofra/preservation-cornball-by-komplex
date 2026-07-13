@@ -211,6 +211,12 @@ It currently:
 - supports `--hidden --frames <n>` for automated smoke runs
 - supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
 
+Current comparison-oriented default:
+
+- the replay now opens at `640x400` when no explicit size is provided
+- this should be read as a VHS-comparison preset for the present preservation pass
+- it does not replace the earlier static finding that the original shell still created a `640x480` Win32 window
+
 The fixed-step choice is deliberate: the original `fla` routine is frame-based and consumes helper RNG state once per scene frame, so the replay needs an explicit host-side simulation cadence instead of tying particle respawns, overlay tint, and jitter state to an unrestricted modern refresh rate.
 
 ## Next step

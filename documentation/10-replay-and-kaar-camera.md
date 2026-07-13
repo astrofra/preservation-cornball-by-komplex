@@ -48,6 +48,13 @@ The replay keeps:
 - one persistent scene-state block per reconstructed family
 - one local scene timer that resets at each segment boundary
 
+Follow-up adjustment on 2026-07-13:
+
+- the replay default client size is now `640x400`
+- this is a comparison preset chosen to bias back-buffer captures toward the current VHS reference workflow
+- explicit `--width` and `--height` overrides still take precedence
+- the static binary reading still says the original Win32 shell created a `640x480` window, so the new default should be treated as an analysis aid, not as a corrected historical fact
+
 ## Chained Order
 
 The replay follows the original dispatch order for the families reconstructed so far:

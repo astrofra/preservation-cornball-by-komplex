@@ -83,6 +83,8 @@ typedef struct ReplayApp {
 
 static const double kSimulationStepSeconds = 1.0 / 60.0;
 static const double kDefaultPositionSeconds = 1.0;
+static const int kDefaultWindowWidth = 640;
+static const int kDefaultWindowHeight = 400;
 
 static const ReplaySegment kReplaySegments[] = {
     {0u, REPLAY_FAMILY_INTRO, 12.0},
@@ -213,8 +215,8 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
 
     memset(options, 0, sizeof(*options));
     options->random_seed = 1u;
-    options->window_width = 1280;
-    options->window_height = 720;
+    options->window_width = kDefaultWindowWidth;
+    options->window_height = kDefaultWindowHeight;
     options->position_seconds = kDefaultPositionSeconds;
 
     for (i = 1; i < argc; ++i) {
@@ -255,11 +257,11 @@ static int parse_options(int argc, char **argv, ReplayOptions *options)
     }
 
     if (options->window_width <= 0) {
-        options->window_width = 1280;
+        options->window_width = kDefaultWindowWidth;
     }
 
     if (options->window_height <= 0) {
-        options->window_height = 720;
+        options->window_height = kDefaultWindowHeight;
     }
 
     if (options->random_seed == 0u) {
