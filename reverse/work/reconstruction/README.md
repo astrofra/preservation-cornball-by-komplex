@@ -59,7 +59,7 @@ Optional replay flags:
 - `--no-music` to keep the replay silent even in Win32 interactive runs
 - `--seed <lcg-seed>` to explore deterministic overlay alignment
 - `--demo-seconds <seconds>` to warm the chained replay before the first presented frame
-- `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic replay
+- `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic threshold-driven replay
 - `--fixed-step-hz <hz>` to vary the deterministic state-update cadence during analysis captures
 - `--force-kaar-main-branch` to keep `kaar` on its tube-branch while still preserving the original overlay-branch RNG consumption
 - `--isolate-kaar-tube` to hide the centered `TXT1` quad during `kaar` and inspect the tube pass by itself
@@ -68,8 +68,9 @@ Optional replay flags:
 Current music behavior:
 
 - in Win32/x86 builds, visible replay runs try to start the original `AAB.XM` soundtrack through the bundled `MIDAS06.DLL`
-- when that succeeds, scene selection follows the real tracker position instead of the synthetic compressed timeline
-- unreconstructed scene slot `9` is still shown as black while music keeps running
+- both the music-driven path and the synthetic fallback now follow the original `0x40e068` threshold table for all `10` scene slots
+- scene slot `9` is preserved as the original unreconstructed `finale` family in the recovered script
+- any family without a lifted renderer still falls back to a black frame
 - x64 builds stay on the synthetic silent path because a 64-bit process cannot load the shipped 32-bit `MIDAS06.DLL`
 - in auto mode, that x64 fallback is silent; use `--music` if you want a hard failure instead
 

@@ -9,6 +9,7 @@
 #include <GL/gl.h>
 
 #include "cornball/capture.h"
+#include "cornball/demo_script.h"
 #include "cornball/fla_gl.h"
 #include "cornball/fla_scene.h"
 #include "cornball/intro_gl.h"
@@ -21,14 +22,17 @@
 #include "cornball/surf_gl.h"
 #include "cornball/surf_scene.h"
 
-typedef enum ReplayFamily {
-    REPLAY_FAMILY_INTRO = 0,
-    REPLAY_FAMILY_KAAR = 1,
-    REPLAY_FAMILY_S_PAIR = 2,
-    REPLAY_FAMILY_SURF = 3,
-    REPLAY_FAMILY_FLA = 4,
-    REPLAY_FAMILY_PLACEHOLDER = 5
-} ReplayFamily;
+typedef CornballDemoFamily ReplayFamily;
+
+enum {
+    REPLAY_FAMILY_INTRO = CORNBALL_DEMO_FAMILY_INTRO,
+    REPLAY_FAMILY_KAAR = CORNBALL_DEMO_FAMILY_KAAR,
+    REPLAY_FAMILY_S_PAIR = CORNBALL_DEMO_FAMILY_S_PAIR,
+    REPLAY_FAMILY_SURF = CORNBALL_DEMO_FAMILY_SURF,
+    REPLAY_FAMILY_FLA = CORNBALL_DEMO_FAMILY_FLA,
+    REPLAY_FAMILY_FINALE = CORNBALL_DEMO_FAMILY_FINALE,
+    REPLAY_FAMILY_PLACEHOLDER = 100
+};
 
 typedef enum ReplayMusicMode {
     REPLAY_MUSIC_MODE_AUTO = -1,
@@ -154,44 +158,6 @@ static const int kDefaultWindowWidth = 640;
 static const int kDefaultWindowHeight = 400;
 static const unsigned int kInvalidSceneIndex = UINT_MAX;
 
-static const ReplaySegment kReplaySegments[] = {
-    {0u, REPLAY_FAMILY_INTRO, 12.0},
-    {1u, REPLAY_FAMILY_KAAR, 6.0},
-    {2u, REPLAY_FAMILY_S_PAIR, 4.0},
-    {3u, REPLAY_FAMILY_SURF, 3.0},
-    {4u, REPLAY_FAMILY_S_PAIR, 2.0},
-    {5u, REPLAY_FAMILY_FLA, 3.0},
-    {6u, REPLAY_FAMILY_SURF, 4.0},
-    {7u, REPLAY_FAMILY_INTRO, 1.0},
-    {8u, REPLAY_FAMILY_KAAR, 3.0}
-};
-
-static const unsigned int kOriginalSceneThresholds[] = {
-    0x0cu,
-    0x12u,
-    0x16u,
-    0x19u,
-    0x1bu,
-    0x1eu,
-    0x22u,
-    0x23u,
-    0x26u,
-    0x29u
-};
-
-static const ReplayFamily kOriginalSceneFamilies[] = {
-    REPLAY_FAMILY_INTRO,
-    REPLAY_FAMILY_KAAR,
-    REPLAY_FAMILY_S_PAIR,
-    REPLAY_FAMILY_SURF,
-    REPLAY_FAMILY_S_PAIR,
-    REPLAY_FAMILY_FLA,
-    REPLAY_FAMILY_SURF,
-    REPLAY_FAMILY_INTRO,
-    REPLAY_FAMILY_KAAR,
-    REPLAY_FAMILY_PLACEHOLDER
-};
-
 static void copy_error_message(char *dst, size_t dst_size, const char *src)
 {
     if ((dst == NULL) || (dst_size == 0u)) {
@@ -286,25 +252,47 @@ static void get_executable_directory(char *dst, size_t dst_size)
 
 static double replay_total_positions(void)
 {
-    size_t index;
-    double total = 0.0;
-
-    for (index = 0u; index < (sizeof(kReplaySegments) / sizeof(kReplaySegments[0])); ++index) {
-        total += kReplaySegments[index].duration_positions;
-    }
-
-    return total;
+    return cornball_demo_script_total_positions();
 }
 
 static double replay_total_seconds(double position_seconds)
 {
-    return replay_total_positions() * position_seconds;
+    return cornball_demo_script_total_seconds(position_seconds);
+}
+
+static ReplaySelection make_invalid_replay_selection(void)
+{
+    ReplaySelection selection;
+
+    memset(&selection, 0, sizeof(selection));
+    selection.segment_index = (unsigned int)cornball_demo_script_scene_count();
+    selection.original_scene_index = kInvalidSceneIndex;
+    selection.family = REPLAY_FAMILY_PLACEHOLDER;
+    selection.local_seconds = 0.0;
+    selection.valid = 0;
+    return selection;
+}
+
+static ReplaySelection replay_make_selection(CornballDemoSceneSelection scene_selection)
+{
+    ReplaySelection selection;
+
+    if (!scene_selection.valid) {
+        return make_invalid_replay_selection();
+    }
+
+    memset(&selection, 0, sizeof(selection));
+    selection.segment_index = scene_selection.scene_index;
+    selection.original_scene_index = scene_selection.scene_index;
+    selection.family = scene_selection.family;
+    selection.valid = 1;
+    return selection;
 }
 
 static void log_scene_transition(
     const ReplayApp *app,
     const char *clock_label,
-    unsigned int scene_index,
+    const ReplaySelection *selection,
     unsigned int position
 )
 {
@@ -313,10 +301,11 @@ static void log_scene_transition(
     }
 
     printf(
-        "[scene-transition] clock=%s elapsed=%0.3f scene=%u position=%u\n",
+        "[scene-transition] clock=%s elapsed=%0.3f scene=%u family=%s position=%u\n",
         clock_label,
         app->elapsed_seconds,
-        scene_index,
+        selection->original_scene_index,
+        cornball_demo_family_name((CornballDemoFamily)selection->family),
         position
     );
     fflush(stdout);
@@ -324,64 +313,19 @@ static void log_scene_transition(
 
 static ReplaySelection replay_select(double elapsed_seconds, double position_seconds)
 {
-    size_t index;
     double current_positions;
-    double start_positions = 0.0;
-    ReplaySelection selection;
-
-    memset(&selection, 0, sizeof(selection));
 
     if (position_seconds <= 0.0) {
-        return selection;
+        return make_invalid_replay_selection();
     }
 
     current_positions = elapsed_seconds / position_seconds;
-
-    for (index = 0u; index < (sizeof(kReplaySegments) / sizeof(kReplaySegments[0])); ++index) {
-        double end_positions = start_positions + kReplaySegments[index].duration_positions;
-
-        if (current_positions < end_positions) {
-            selection.segment_index = (unsigned int)index;
-            selection.original_scene_index = kReplaySegments[index].original_scene_index;
-            selection.family = kReplaySegments[index].family;
-            selection.local_seconds = (current_positions - start_positions) * position_seconds;
-            selection.valid = 1;
-            return selection;
-        }
-
-        start_positions = end_positions;
-    }
-
-    selection.segment_index = (unsigned int)((sizeof(kReplaySegments) / sizeof(kReplaySegments[0])) - 1u);
-    selection.original_scene_index = kReplaySegments[selection.segment_index].original_scene_index;
-    selection.family = kReplaySegments[selection.segment_index].family;
-    selection.local_seconds = kReplaySegments[selection.segment_index].duration_positions * position_seconds;
-    selection.valid = 1;
-    return selection;
+    return replay_make_selection(cornball_demo_script_select_from_position_units(current_positions));
 }
 
 static ReplaySelection replay_select_from_music_position(unsigned int position)
 {
-    size_t index;
-    ReplaySelection selection;
-
-    memset(&selection, 0, sizeof(selection));
-
-    for (index = 0u; index < (sizeof(kOriginalSceneThresholds) / sizeof(kOriginalSceneThresholds[0])); ++index) {
-        if (position < kOriginalSceneThresholds[index]) {
-            selection.segment_index = (unsigned int)index;
-            selection.original_scene_index = (unsigned int)index;
-            selection.family = kOriginalSceneFamilies[index];
-            selection.valid = 1;
-            return selection;
-        }
-    }
-
-    selection.segment_index = (unsigned int)((sizeof(kOriginalSceneFamilies) / sizeof(kOriginalSceneFamilies[0])) - 1u);
-    selection.original_scene_index = selection.segment_index;
-    selection.family = kOriginalSceneFamilies[selection.segment_index];
-    selection.valid = 1;
-    return selection;
+    return replay_make_selection(cornball_demo_script_select_from_music_position(position));
 }
 
 static double replay_step_seconds(const ReplayOptions *options)
@@ -782,18 +726,28 @@ static void update_music_selection(ReplayApp *app)
 
     next_selection = replay_select_from_music_position(app->music_status.position);
 
-    if ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index)) {
+    if (next_selection.valid &&
+            ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index))) {
         app->scene_start_seconds = app->elapsed_seconds;
         app->active_scene_index = next_selection.original_scene_index;
-        log_scene_transition(app, "music", next_selection.original_scene_index, app->music_status.position);
+        log_scene_transition(app, "music", &next_selection, app->music_status.position);
     }
 
-    next_selection.local_seconds = app->elapsed_seconds - app->scene_start_seconds;
-    if (next_selection.local_seconds < 0.0) {
-        next_selection.local_seconds = 0.0;
+    if (next_selection.valid) {
+        next_selection.local_seconds = app->elapsed_seconds - app->scene_start_seconds;
+        if (next_selection.local_seconds < 0.0) {
+            next_selection.local_seconds = 0.0;
+        }
     }
 
     app->selection = next_selection;
+}
+
+static void clear_black_frame(const ReplayApp *app)
+{
+    glViewport(0, 0, app->width, app->height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 static int capture_current_frame(ReplayApp *app, const char *prefix)
@@ -856,28 +810,39 @@ static void step_current_segment(ReplayApp *app)
 {
     ReplaySelection next_selection;
 
-    next_selection = replay_select(app->elapsed_seconds, app->options.position_seconds);
-    if (next_selection.valid &&
-            (!app->music_active) &&
-            ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index))) {
-        double current_positions = app->elapsed_seconds / app->options.position_seconds;
+    if (app->music_active) {
+        next_selection = app->selection;
+    } else {
+        next_selection = replay_select(app->elapsed_seconds, app->options.position_seconds);
+        if (next_selection.valid &&
+                ((!app->selection.valid) || (next_selection.original_scene_index != app->active_scene_index))) {
+            double current_positions = app->elapsed_seconds / app->options.position_seconds;
 
-        app->active_scene_index = next_selection.original_scene_index;
-        log_scene_transition(app, "synthetic", next_selection.original_scene_index, (unsigned int)current_positions);
+            app->scene_start_seconds = app->elapsed_seconds;
+            app->active_scene_index = next_selection.original_scene_index;
+            log_scene_transition(app, "synthetic", &next_selection, (unsigned int)current_positions);
+        }
+
+        if (next_selection.valid) {
+            next_selection.local_seconds = app->elapsed_seconds - app->scene_start_seconds;
+            if (next_selection.local_seconds < 0.0) {
+                next_selection.local_seconds = 0.0;
+            }
+        }
+
+        app->selection = next_selection;
     }
 
-    app->selection = next_selection;
-
-    if (!app->selection.valid) {
+    if (!next_selection.valid) {
         return;
     }
 
-    switch (app->selection.family) {
+    switch (next_selection.family) {
     case REPLAY_FAMILY_INTRO:
         cornball_intro_scene_step_frame(
             &app->intro_scene,
             &app->random,
-            app->selection.local_seconds,
+            next_selection.local_seconds,
             &app->intro_frame
         );
         break;
@@ -886,7 +851,7 @@ static void step_current_segment(ReplayApp *app)
         cornball_kaar_scene_step_frame(
             &app->kaar_scene,
             &app->random,
-            app->selection.local_seconds,
+            next_selection.local_seconds,
             &app->kaar_frame
         );
         break;
@@ -895,7 +860,7 @@ static void step_current_segment(ReplayApp *app)
         cornball_s_pair_scene_step_frame(
             &app->s_pair_scene,
             &app->random,
-            app->selection.local_seconds,
+            next_selection.local_seconds,
             &app->s_pair_frame
         );
         break;
@@ -904,7 +869,7 @@ static void step_current_segment(ReplayApp *app)
         cornball_surf_scene_step_frame(
             &app->surf_scene,
             &app->random,
-            app->selection.local_seconds,
+            next_selection.local_seconds,
             &app->surf_frame
         );
         break;
@@ -913,11 +878,12 @@ static void step_current_segment(ReplayApp *app)
         cornball_fla_scene_step_frame(
             &app->fla_scene,
             &app->random,
-            app->selection.local_seconds,
+            next_selection.local_seconds,
             &app->fla_frame
         );
         break;
 
+    case REPLAY_FAMILY_FINALE:
     case REPLAY_FAMILY_PLACEHOLDER:
         break;
     }
@@ -1142,6 +1108,11 @@ static void destroy_gl_window(ReplayApp *app)
 
 static void render_current_segment(ReplayApp *app)
 {
+    if (!app->selection.valid) {
+        clear_black_frame(app);
+        return;
+    }
+
     switch (app->selection.family) {
     case REPLAY_FAMILY_INTRO:
         cornball_intro_gl_resize(&app->intro_renderer, app->width, app->height);
@@ -1168,10 +1139,9 @@ static void render_current_segment(ReplayApp *app)
         cornball_fla_gl_render(&app->fla_renderer, &app->fla_frame);
         break;
 
+    case REPLAY_FAMILY_FINALE:
     case REPLAY_FAMILY_PLACEHOLDER:
-        glViewport(0, 0, app->width, app->height);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        clear_black_frame(app);
         break;
     }
 }

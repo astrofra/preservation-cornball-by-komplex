@@ -55,32 +55,29 @@ The polled `position` field now drives scene dispatch directly.
 
 ## Scene Dispatch Change
 
-Before this pass, the replay used a compressed synthetic timeline:
+The replay now follows the original scene slots on both code paths:
 
-- `intro -> kaar -> surf -> fla -> surf -> intro -> kaar`
+- music-driven path: tracker `position` from `MIDASgetPlayStatus`
+- synthetic fallback: threshold-driven position units derived from `--position-seconds`
 
-with missing scene families removed.
-
-That compressed timeline is still kept as the fallback when music is not active.
-
-When music is active, the replay instead follows the original scene slots:
+Both paths therefore use the same original `10`-slot script:
 
 1. scene `0` -> `intro`
 2. scene `1` -> `kaar`
-3. scene `2` -> placeholder
+3. scene `2` -> `s-pair`
 4. scene `3` -> `surf`
-5. scene `4` -> placeholder
+5. scene `4` -> `s-pair`
 6. scene `5` -> `fla`
 7. scene `6` -> `surf`
 8. scene `7` -> `intro`
 9. scene `8` -> `kaar`
-10. scene `9` -> placeholder
+10. scene `9` -> `finale`
 
-Current placeholder policy:
+Current fallback policy:
 
-- unreconstructed slots render as black frames
+- the recovered family identity stays exact, but any family without a lifted renderer still renders as a black fallback frame
 
-This is intentionally explicit so the music can stay on the original order grid without pretending that the missing families are already reconstructed.
+This is intentionally explicit so the reconstruction stays on the original order grid without pretending that the missing families are already reconstructed.
 
 ## Controls
 
@@ -100,9 +97,10 @@ This pass is designed to preserve two workflows:
 
 - deterministic hidden smoke tests without sound
 - interactive Win32 playback with original music timing
+- live music replay now keeps tracker `position` authoritative instead of letting the synthetic selector overwrite it
 
 The next preservation step after this one should be:
 
 1. validate the Win32 music path against more reference captures
-2. replace black placeholders by reconstructed `s-pair` and finale families
+2. replace remaining black fallback rendering by reconstructed `finale` and any incomplete family output
 3. later replace the legacy MIDAS dependency with a modern open-source x64-capable XM backend

@@ -57,19 +57,23 @@ Follow-up adjustment on 2026-07-13:
 
 ## Chained Order
 
-The replay follows the original dispatch order for the families reconstructed so far:
+The replay now follows the full original `10`-slot dispatch script from the threshold table:
 
 1. scene `0` -> `intro`
 2. scene `1` -> `kaar`
-3. scene `3` -> `surf`
-4. scene `5` -> `fla`
-5. scene `6` -> `surf`
-6. scene `7` -> `intro`
-7. scene `8` -> `kaar`
+3. scene `2` -> `s-pair`
+4. scene `3` -> `surf`
+5. scene `4` -> `s-pair`
+6. scene `5` -> `fla`
+7. scene `6` -> `surf`
+8. scene `7` -> `intro`
+9. scene `8` -> `kaar`
+10. scene `9` -> `finale`
 
 Current limitation:
 
-- unreconstructed families `2`, `4`, and `9` are compressed out of the replay instead of being rendered as gaps or placeholders
+- any family without a lifted renderer still falls back to a black frame
+- scene `9` is kept as `finale` in the recovered script instead of being collapsed into a generic placeholder
 
 ## Timing Model
 
@@ -79,12 +83,13 @@ Since the exact music-position-to-seconds mapping is not yet rebuilt, the replay
 
 - original slot widths in music-position units
 - a synthetic conversion controlled by `--position-seconds`
+- on the live music path, `MIDASgetPlayStatus.position` remains authoritative across the whole frame step
 
 Default:
 
 - `1.0` second per original music-position unit
 
-So the replay order is original, while the absolute duration is still an approximation.
+So the replay order and slot boundaries are original, while the absolute duration is still an approximation.
 
 ## Build Cleanup
 
@@ -137,4 +142,4 @@ Next useful targets:
 
 - compare replay captures against reference-video anchors
 - decide whether shared helper state should now move out of the per-family wrappers
-- fill the unreconstructed scene gaps so the replay can follow the full original dispatch table without compression
+- lift the missing `finale` family and any remaining incomplete scene-family output so black fallback frames disappear

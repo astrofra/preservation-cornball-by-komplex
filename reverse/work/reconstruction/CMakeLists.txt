@@ -8,6 +8,7 @@ add_library(
     cornball_reconstruction
     STATIC
     src/cornball_capture.c
+    src/cornball_demo_script.c
     src/cornball_fla_scene.c
     src/cornball_fla_gl.c
     src/cornball_intro_scene.c
@@ -34,6 +35,19 @@ endif()
 include(CTest)
 
 if(CORNBALL_BUILD_TESTS)
+    add_executable(
+        demo_script_smoketest
+        tests/demo_script_smoketest.c
+    )
+
+    target_link_libraries(demo_script_smoketest PRIVATE cornball_reconstruction)
+
+    if(NOT MSVC)
+        target_link_libraries(demo_script_smoketest PRIVATE m)
+    endif()
+
+    add_test(NAME demo_script_smoketest COMMAND demo_script_smoketest)
+
     add_executable(
         fla_scene_smoketest
         tests/fla_scene_smoketest.c

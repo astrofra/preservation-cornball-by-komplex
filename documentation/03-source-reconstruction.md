@@ -144,8 +144,9 @@ The current C reconstruction models these points directly from the binary:
 - `surf` additive `FLA.TGA` stack of `32` quads, with base `z = t * 8` and per-layer step `-10`
 - `surf` rotating `SURF128.TGA` foreground quad at `z = -1`, `u/v = 0 .. 2`, rotation `= t * 11`, blend `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
 - `surf` `TXT1.TGA` jitter overlay with reseed mask `0`, so it consumes two fresh random samples every frame
-- replay ordering `= intro(0) -> kaar(1) -> surf(3) -> fla(5) -> surf(6) -> intro(7) -> kaar(8)`, matching the original dispatch order for the families reconstructed so far
-- replay segment lengths are driven by the original music-position slot widths and exposed through a synthetic `--position-seconds` rate until the exact audio-driven timing is rebuilt
+- replay scene script `= intro(0) -> kaar(1) -> s-pair(2) -> surf(3) -> s-pair(4) -> fla(5) -> surf(6) -> intro(7) -> kaar(8) -> finale(9)`
+- replay scene changes are driven by the original threshold table at `0x0040e068` in both music-driven and synthetic playback
+- synthetic replay still exposes a tunable `--position-seconds` rate because the exact tracker-position-to-seconds mapping is not rebuilt yet
 
 One important correction from the first pass:
 
@@ -212,7 +213,8 @@ It currently:
 - runs the chained reconstructed sequence with a default fixed `60 Hz` scene-frame cadence, now overrideable with `--fixed-step-hz` during synthetic capture analysis
 - resets scene-local time at each original scene-slot transition while keeping the global PRNG and family-owned state alive
 - in Win32/x86 builds, can start the original `AAB.XM` replay through the bundled `MIDAS06.DLL`
-- when that music path is active, follows the true tracker position for scene dispatch and still leaves unreconstructed scene slot `9` as black
+- both the synthetic and music-driven paths now use the original `10`-slot threshold script
+- slot `9` stays labeled as the original `finale` family in the recovered script even though its current renderer still falls back to black
 - supports `--hidden --frames <n>` for automated smoke runs
 - supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--fixed-step-hz`, `--force-kaar-main-branch`, `--isolate-kaar-tube`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
 
@@ -235,4 +237,4 @@ Use this buildable `fla` / `intro` base as the template for the next lift:
 
 1. compare the replayed `surf` and `kaar` captures against the reference-video anchors and tune any remaining projection or layer-order mismatch
 2. decide whether the shared overlay and tube-shell helpers should now move into reusable support modules before the next family is added
-3. lift the missing `s` pair and finale families so the dispatcher can stop compressing the unreconstructed gaps
+3. lift the remaining incomplete family output, especially the unreconstructed `finale` family, so the replay can leave black fallback frames behind
