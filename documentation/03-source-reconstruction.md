@@ -137,7 +137,8 @@ The current C reconstruction models these points directly from the binary:
 - tube-shell transform `x = cos(t * 0.2) * 3`, `y = cos(t * 0.3) * 3`
 - tube-shell rotation `rx = sin(t * 0.3) * 190`, `ry = t * 2`, `rz = t`
 - tube-shell texture phase `= t * 0.1`, with the opposite side sampled at `phase + 3.0`
-- centered `TXT1.TGA` quad rotating at `t * 11` with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
+- centered `TXT1.TGA` quad with `glColor4f(0.5, 0.3 + gate_tint, 0.2, 1.0)`, rotating at `t * 11`, blended with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR`
+- centered `TXT1` helper UVs are slightly asymmetric in the original binary: `(0.99, 0.01) -> (0.99, 1.0) -> (0.01, 0.99) -> (0.01, 0.01)` at `z = -2`
 - `surf` fogged `SURF128.TGA` tube-shell pass with the global `65 / 1 / 90` perspective camera still active
 - `surf` tube-shell transform `x = cos(t * 0.3) * 3`, `y = cos(t * 0.2) * 3`, `rz_pre = t * 3`, `rx = sin(t * 0.5) * 30`, `rz_post = t * 32`, `phase = -0.3 * t`
 - `surf` additive `FLA.TGA` stack of `32` quads, with base `z = t * 8` and per-layer step `-10`

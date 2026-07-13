@@ -234,6 +234,42 @@ Practical conclusion:
 - the shared tube helper and `KAAR128` pass are now close enough to the original to serve as a visual anchor
 - the next `kaar` target is the centered `TXT1` caller setup: exact quad placement, rotation, and how strongly it should sit in front of the tube at this moment
 
+## Iteration 8
+
+The tail of `render_scene_kaar_family` was rechecked directly against `0x00402531 .. 0x004025aa`.
+
+Recovered caller-side `TXT1` details:
+
+- `glColor4f(0.5, 0.3 + gate_tint, 0.2, 1.0)`
+- `glBindTexture(GL_TEXTURE_2D, 3)`
+- `glLoadIdentity()`
+- `glRotatef(t * 11, 0, 0, 1)`
+- `glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR)`
+- `draw_centered_textured_quad(3.0, 3.0)`
+
+The quad helper itself is not a perfectly symmetric `0.01 .. 0.99` UV rectangle. Its original per-vertex mapping is:
+
+- `( +3, -3, -2 ) -> (0.99, 0.01)`
+- `( +3, +3, -2 ) -> (0.99, 1.00)`
+- `( -3, +3, -2 ) -> (0.01, 0.99)`
+- `( -3, -3, -2 ) -> (0.01, 0.01)`
+
+### Capture Outcome
+
+Artifact:
+
+- [scene1 force-main anchor after TXT1 tail pass](../reverse/work/reconstruction/captures/scene1-force-main-anchor-txt1-tail-pass/replay_frame_000000.png)
+
+Observed change:
+
+- the `TXT1` pass is now aligned with the original helper's exact UV layout
+- the visible change at this anchor is small, which means the remaining mismatch is not explained by a gross caller-tail mistake anymore
+
+Practical conclusion:
+
+- the centered `TXT1` tail is now close to the original binary at the call/parameter level
+- the remaining scene1 mismatch is more likely to live in the neighboring branch behavior or in the relative scene composition than in the `TXT1` tail helper itself
+
 ## Current Conclusion
 
 What now looks solid:
@@ -243,19 +279,20 @@ What now looks solid:
 - the original LCG seed really is `1`
 - the tube-scene caller translations needed the `x/y` swap and have now been corrected
 - the isolated `kaar` tube anchor is visible again and broadly matches the VHS cue of a cyan interior with a dark center
+- the centered `TXT1` tail now matches the original caller-side color, rotation, blend mode, size, and helper UV layout closely
 - the centered `TXT1` overlay was indeed hiding too much of `scene1`, and the cause was missing alpha reconstruction for the legacy TGAs rather than the recovered `glBlendFunc` call itself
 
 What is still unresolved:
 
 - the green/cyan flashing tube seen in the early VHS material almost certainly belongs to `scene1 / kaar`
 - fixed-step cadence alone does not explain the mismatch
-- after fixing the texture-alpha path and the `glTranslatef` stack-order bug, the remaining gap now looks more like caller-side `TXT1` composition than a missing tube pass
+- after fixing the texture-alpha path, the `glTranslatef` stack-order bug, and the exact `TXT1` tail helper layout, the remaining gap now looks more like neighboring branch behavior or overall scene composition than a missing tube pass
 - the dark core in the reconstructed tube still sits lower than in the VHS anchor, so some camera or caller-side quad nuance may still be off
 
 So the next logical target is narrower than before:
 
-1. recover the remaining `kaar` centered-quad caller details from the original binary: exact color push order, rotation, and any matrix nuance around the `TXT1` pass
-2. compare the corrected force-main anchor against the VHS frame to tune why the dark core is vertically offset and why the foreground text layer reads too strongly
+1. recover the neighboring `kaar` branch-local details around the overlay path and the reused gate local, especially whether the red overlay uses `gate_tint` rather than `gate_unit`
+2. compare the corrected force-main anchor against the VHS frame to tune why the dark core is vertically offset and why the foreground text layer still reads too strongly
 3. only after that, revisit whether any remaining mismatch is random-consumption noise rather than caller-side composition
 
 ## Verification

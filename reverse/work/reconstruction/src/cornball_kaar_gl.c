@@ -290,15 +290,20 @@ static void draw_layer_quad(const CornballKaarLayerQuad *quad)
 static void draw_centered_textured_quad(float half_width, float half_height)
 {
     glBegin(GL_QUADS);
-    draw_textured_quad_uv(
-        half_width,
-        half_height,
-        -2.0f,
-        kCenteredTexcoordInset,
-        1.0f - kCenteredTexcoordInset,
-        kCenteredTexcoordInset,
-        1.0f
-    );
+
+    /* Match the original helper's slightly asymmetric TXT1 sampling. */
+    glTexCoord2f(1.0f - kCenteredTexcoordInset, kCenteredTexcoordInset);
+    glVertex3f(half_width, -half_height, -2.0f);
+
+    glTexCoord2f(1.0f - kCenteredTexcoordInset, 1.0f);
+    glVertex3f(half_width, half_height, -2.0f);
+
+    glTexCoord2f(kCenteredTexcoordInset, 1.0f - kCenteredTexcoordInset);
+    glVertex3f(-half_width, half_height, -2.0f);
+
+    glTexCoord2f(kCenteredTexcoordInset, kCenteredTexcoordInset);
+    glVertex3f(-half_width, -half_height, -2.0f);
+
     glEnd();
 }
 
