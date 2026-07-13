@@ -86,6 +86,11 @@ if(CORNBALL_BUILD_TESTS)
 endif()
 
 if(WIN32)
+    set(
+        CORNBALL_ORIGINAL_MIDAS_DLL
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../original/cornball/MIDAS06.DLL"
+    )
+
     add_executable(
         cornball_demo_replay
         src/cornball_demo_replay_win32.c
@@ -99,6 +104,17 @@ if(WIN32)
         gdi32
         user32
     )
+
+    if((CMAKE_SIZEOF_VOID_P EQUAL 4) AND EXISTS "${CORNBALL_ORIGINAL_MIDAS_DLL}")
+        add_custom_command(
+            TARGET cornball_demo_replay
+            POST_BUILD
+            COMMAND
+                ${CMAKE_COMMAND} -E copy_if_different
+                "${CORNBALL_ORIGINAL_MIDAS_DLL}"
+                "$<TARGET_FILE_DIR:cornball_demo_replay>/MIDAS06.DLL"
+        )
+    endif()
 
     if(CORNBALL_BUILD_TESTS)
         add_test(

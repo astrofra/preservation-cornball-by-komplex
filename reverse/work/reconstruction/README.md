@@ -16,6 +16,7 @@ Current scope:
 - OpenGL renderer for the reconstructed `kaar` scene
 - OpenGL renderer for the reconstructed `surf` scene
 - single Win32/WGL replay executable for Windows 10/11 that chains the reconstructed scene families in original order
+- optional replay of the original `AAB.XM` soundtrack through the bundled `MIDAS06.DLL` when the replay is built as Win32/x86
 - smoke test coverage for deterministic scene reconstruction plus a hidden end-to-end replay run
 
 Build with Visual Studio 2022 via CMake:
@@ -29,6 +30,20 @@ ctest -C Release --output-on-failure
 Pop-Location
 ```
 
+To get music replay from the original `MIDAS06.DLL`, build the replay as `Win32` instead of `x64`:
+
+```powershell
+cmake -S reverse/work/reconstruction -B reverse/work/reconstruction/build-win32 -G "Visual Studio 17 2022" -A Win32
+cmake --build reverse/work/reconstruction/build-win32 --config Release --target cornball_demo_replay
+.\reverse\work\reconstruction\build-win32\Release\cornball_demo_replay.exe
+```
+
+In that `Win32` build:
+
+- `MIDAS06.DLL` is copied automatically next to `cornball_demo_replay.exe`
+- the replay looks for `MIDAS06.DLL` next to the executable before falling back to the resolved asset root
+- `AAB.XM` is still loaded from the asset root by default, but if you also place it next to the executable, that local copy takes precedence
+
 Default replay client size:
 
 - `640x400`
@@ -40,9 +55,19 @@ Optional replay flags:
 - `--hidden --frames 120 --position-seconds 0.05` for a short automated full-sequence smoke run
 - `--asset-root <path>` to point at an alternate extracted asset directory
 - `--width <pixels> --height <pixels>` to match a reference capture size
+- `--music` to force music startup when the backend is available
+- `--no-music` to keep the replay silent even in Win32 interactive runs
 - `--seed <lcg-seed>` to explore deterministic overlay alignment
 - `--demo-seconds <seconds>` to warm the chained replay before the first presented frame
 - `--position-seconds <seconds>` to control how long one original music-position unit lasts in the synthetic replay
 - `--capture-dir <path> --capture-every <n>` to dump back-buffer frames as `TGA`
 
-The current code still does not rebuild the original demo's full startup shell, original audio path, the unreconstructed scene families, or the exact audio-driven duration mapping between music positions and wall-clock time.
+Current music behavior:
+
+- in Win32/x86 builds, visible replay runs try to start the original `AAB.XM` soundtrack through the bundled `MIDAS06.DLL`
+- when that succeeds, scene selection follows the real tracker position instead of the synthetic compressed timeline
+- unreconstructed scene slots `2`, `4`, and `9` are shown as black placeholders while music keeps running
+- x64 builds stay on the synthetic silent path because a 64-bit process cannot load the shipped 32-bit `MIDAS06.DLL`
+- in auto mode, that x64 fallback is silent; use `--music` if you want a hard failure instead
+
+The current code still does not rebuild the original demo's full startup shell, provide a modern open-source x64 XM backend, reconstruct the unrecovered scene families, or model the exact per-row visual timing inside those missing slots.
