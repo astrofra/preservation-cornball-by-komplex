@@ -22,6 +22,7 @@ This first coding pass reconstructs:
 - a second OpenGL renderer that uploads `KAAR128.TGA`, `TXT1.TGA`, and `TXT2.TGA`
 - a fourth OpenGL renderer that uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
 - a single Win32/WGL replay executable that chains the reconstructed families in original scene order
+- a Win32/x86 music path that reuses the original `MIDAS06.DLL` and `AAB.XM`
 - a reusable back-buffer frame-dump path for hidden preview captures
 
 It does not yet reconstruct:
@@ -208,14 +209,21 @@ It currently:
 - uploads `SURF128.TGA`, `FLA.TGA`, and `TXT1.TGA`
 - runs the chained reconstructed sequence with a fixed `60 Hz` scene-frame cadence
 - resets scene-local time at each original scene-slot transition while keeping the global PRNG and family-owned state alive
+- in Win32/x86 builds, can start the original `AAB.XM` replay through the bundled `MIDAS06.DLL`
+- when that music path is active, follows the true tracker position for scene dispatch and leaves unreconstructed slots as black placeholders
 - supports `--hidden --frames <n>` for automated smoke runs
-- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--capture-dir`, and `--capture-every` for scripted reference capture
+- supports `--width`, `--height`, `--seed`, `--demo-seconds`, `--position-seconds`, `--capture-dir`, `--capture-every`, `--music`, and `--no-music` for scripted reference capture
 
 Current comparison-oriented default:
 
 - the replay now opens at `640x400` when no explicit size is provided
 - this should be read as a VHS-comparison preset for the present preservation pass
 - it does not replace the earlier static finding that the original shell still created a `640x480` Win32 window
+
+Current music boundary:
+
+- the shipped `MIDAS06.DLL` is 32-bit, so this music path is only available in a `Win32` replay build
+- the default `x64` replay build still falls back to the synthetic silent timeline
 
 The fixed-step choice is deliberate: the original `fla` routine is frame-based and consumes helper RNG state once per scene frame, so the replay needs an explicit host-side simulation cadence instead of tying particle respawns, overlay tint, and jitter state to an unrestricted modern refresh rate.
 

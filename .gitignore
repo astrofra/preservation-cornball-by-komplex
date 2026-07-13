@@ -1,2 +1,3 @@
 *.pyc
 reverse/work/reconstruction/build/
+build-win32
